@@ -236,70 +236,6 @@
             border: 1px solid rgba(181, 163, 190, 0.3);
         }
 
-        /* --- 烏鴉動畫樣式 --- */
-        .crow-anim-wrapper {
-            position: absolute;
-            top: 50%;
-            left: -80px; /* 起點 */
-            margin-top: -30px; 
-            width: 80px;
-            height: 60px;
-            z-index: 10;
-            pointer-events: none;
-            /* Wrapper 負責飛行路徑 */
-        }
-
-        /* 新增：飛行觸發類別 */
-        .crow-anim-wrapper.flying {
-            animation: crowFlyPath 4s linear forwards;
-        }
-
-        .crow-body {
-            position: absolute;
-            top: 0;
-            left: 0;
-            font-size: 3rem;
-            line-height: 1;
-            transform: scaleX(-1); /* 面向右 */
-            /* 模擬翅膀搧動：輕微的上下縮放和旋轉 */
-            animation: wingFlap 0.3s infinite alternate ease-in-out;
-            filter: drop-shadow(0 5px 5px rgba(0,0,0,0.1));
-        }
-
-        .crow-meat {
-            position: absolute;
-            font-size: 1.2rem; /* 肉變小 */
-            right: 0px; /* 靠近嘴巴 */
-            top: 18px;  /* 嘴巴高度 */
-            z-index: 11;
-            /* 初始狀態：跟著烏鴉 */
-        }
-
-        .crow-meat.dropping {
-            /* 掉落動畫狀態 */
-            animation: meatFall 0.5s cubic-bezier(0.5, 0, 1, 1) forwards;
-        }
-
-        /* 翅膀搧動效果 */
-        @keyframes wingFlap {
-            0% { transform: scaleX(-1) translateY(0) rotate(0deg); }
-            100% { transform: scaleX(-1) translateY(-3px) rotate(5deg); }
-        }
-
-        /* 烏鴉飛行路徑：左入 -> 中停 -> 右出 */
-        @keyframes crowFlyPath {
-            0% { left: -80px; } 
-            40% { left: 50%; transform: translateX(-50%); } /* 飛到中間 */
-            60% { left: 50%; transform: translateX(-50%); } /* 停留 */
-            100% { left: calc(100% + 80px); } /* 飛出 */
-        }
-
-        /* 肉掉落效果 */
-        @keyframes meatFall {
-            0% { top: 18px; opacity: 1; transform: scale(1); }
-            100% { top: 150px; opacity: 0; transform: scale(0.5); }
-        }
-
         .feedback-section { margin-top: 60px; padding-top: 20px; border-top: 1px dashed var(--border-color); text-align: center; }
         .feedback-text { font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 15px; }
         .btn-line { background-color: transparent; color: var(--accent-purple); border: 1px solid var(--accent-purple); padding: 10px 20px; border-radius: 50px; font-size: 0.9rem; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; transition: all 0.3s ease; font-weight: 500; }
@@ -667,12 +603,6 @@
             <!-- 鹹魚翻身 -->
             <section id="flip" class="section">
                 <div class="card">
-                    <!-- 烏鴉動畫層：放置在卡片內部，受 overflow: hidden 限制 -->
-                    <div id="crow-wrapper" class="crow-anim-wrapper">
-                         <div class="crow-body">🐦‍⬛</div>
-                         <div class="crow-meat" id="crow-meat">🥩</div>
-                    </div>
-
                     <div class="flip-container" onclick="flipCard()">
                         <div class="flipper" id="flipper">
                             <div class="front">
@@ -1867,43 +1797,9 @@
                     commentEl.innerHTML = `<strong>鹹魚主廚的祕方：</strong><br>${commentText}`;
                 }
                 container.classList.add('flipped');
-                
-                // 觸發烏鴉動畫
-                triggerCrow();
             } else { 
                 container.classList.remove('flipped'); 
-                // 重置動畫
-                resetCrow();
             }
-        }
-
-        // --- 烏鴉動畫邏輯 ---
-        function triggerCrow() {
-            const crow = document.getElementById('crow-wrapper');
-            const meat = document.getElementById('crow-meat');
-            if(!crow || !meat) return;
-
-            // 1. 重置狀態
-            crow.classList.remove('flying');
-            meat.classList.remove('dropping');
-            void crow.offsetWidth; // Force reflow
-
-            // 2. 開始飛行
-            crow.classList.add('flying');
-
-            // 3. 在飛行中途 (約 40% 進度處，即 1.6s) 掉落肉塊
-            // 這裡設定 1.8s 讓它在懸停階段掉落
-            setTimeout(() => {
-                meat.classList.add('dropping');
-                showToast('🥩 烏鴉為你叼來了恩典！'); 
-            }, 1800);
-        }
-
-        function resetCrow() {
-            const crow = document.getElementById('crow-wrapper');
-            const meat = document.getElementById('crow-meat');
-            if(crow) crow.classList.remove('flying');
-            if(meat) meat.classList.remove('dropping');
         }
 
         function detectPUA() {
