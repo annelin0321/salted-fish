@@ -287,6 +287,9 @@
         input::placeholder, textarea::placeholder { color: #D6D0C8; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        /* quote-comment override to avoid border */
+        #quote-comment { font-size: 0.85rem; color: var(--accent-blue); font-style: italic; width: 85%; } 
     </style>
 </head>
 <body>
@@ -520,9 +523,10 @@
                             <div class="back">
                                 <p class="quote-content" id="quote-content">正在後台熬製亮光...</p>
                                 <p id="quote-source" class="text-muted" style="font-weight:500;">--</p>
+                                <div style="width: 40%; height: 1px; border-top: 1px dashed #D6D0C8; margin: 30px 0;"></div>
                                 <p id="quote-comment"> </p>
                                 <!-- 修改按鈕 -->
-                                <button class="btn-icon" onclick="saveCardImage(event)" style="margin-top:15px; font-weight:bold;">📸 拍立得打包 (存圖)</button>
+                                <button class="btn-icon" onclick="saveCardImage(event)" style="margin-top:25px; font-weight:bold;">📸 拍立得打包 (存圖)</button>
                             </div>
                         </div>
                     </div>
@@ -693,7 +697,7 @@
 
                 <div style="margin-top: 25px;">
                     <p class="ai-note">💡 本站所有文案皆由 AI 與鹹魚協同醃漬而成，僅供娛樂。</p>
-                    <p style="font-size: 0.65rem; color: #CCC;">Ver 3.0 (Flow Redesign)</p>
+                    <p style="font-size: 0.65rem; color: #CCC;">Ver 3.6 (Smart Search)</p>
                     <p>&copy; 2026機智的鹹魚生活 | 耶穌加油站 x 微光新事</p>
                 </div>
             </footer>
@@ -821,32 +825,6 @@
             
             <div class="mt-6 text-center">
                 <button onclick="closeHelpModal()" class="bg-[#A68C76] text-white px-6 py-2 rounded-full hover:bg-[#8e7662] transition-colors">我知道了</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- 讀經確認視窗 -->
-    <div id="read-modal" class="modal-overlay">
-        <div class="modal-content">
-            <h3 id="modal-day" style="font-size: 1.2rem; margin-bottom: 5px;">Day X</h3>
-            <p id="modal-date" style="font-size: 0.9rem; color: #999; margin-bottom: 15px;">--/--</p>
-            
-            <div class="read-list" id="modal-read-list">
-                <!-- JS 生成進度列表 -->
-            </div>
-
-            <!-- 閱讀器區塊 -->
-            <div id="reader-pane" class="reader-pane">
-                <div id="reader-content"></div>
-            </div>
-            
-            <button id="btn-auto-read" onclick="loadAllScriptures()" style="width:100%; padding: 12px; border: 1px solid var(--accent-blue); border-radius: 12px; background: white; color: var(--accent-blue); margin-bottom: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 5px;">
-                📖 閱讀經文 (載入 CUNP 和合本)
-            </button>
-            
-            <div style="display: flex; gap: 10px; margin-top: 10px;">
-                <button onclick="closeModal()" style="flex: 1; padding: 12px; border-radius: 12px; border: none; background: #f0f0f0;">稍後</button>
-                <button onclick="confirmReading()" style="flex: 1; padding: 12px; border-radius: 12px; border: none; background: var(--morandi-green); color: white;">打卡完成</button>
             </div>
         </div>
     </div>
@@ -1085,11 +1063,33 @@
         }
         function getPreservative() { const d=document.getElementById('preservative-display'); d.style.opacity=0; const pool=onlinePreservativePool.length?onlinePreservativePool:preservativePool; const msg=pool[Math.floor(Math.random()*pool.length)].content; setTimeout(()=>{d.innerText=`「${msg}」`;d.style.opacity=1;},200); }
         function flipCard() { document.querySelector('.flip-container').classList.toggle('flipped'); if(document.querySelector('.flip-container').classList.contains('flipped')){const q=(onlineFlipQuotes.length?onlineFlipQuotes:quotes)[Math.floor(Math.random()*onlineFlipQuotes.length||quotes.length)]; document.getElementById('quote-content').innerText=q.text; document.getElementById('quote-source').innerText=q.source; document.getElementById('quote-comment').innerHTML=`<strong>主廚祕方：</strong><br>${q.comment.replace(/[()]/g,'').replace('鹹魚主廚的祕方：','')}`; } }
-        function saveCardImage(e) { e.stopPropagation(); showToast('📸 截圖中...'); const temp=document.createElement('div'); temp.style.position='fixed'; temp.style.top='0'; temp.style.zIndex='-9'; temp.style.width='350px'; temp.innerHTML=`<div style="background:#FDFBF7;border:2px solid #7CA1B3;border-radius:24px;padding:40px 30px;text-align:center;font-family:'Noto Sans TC';"><p style="font-family:'Noto Serif TC';font-size:1.4rem;color:#5A524C;margin-bottom:20px;">${document.getElementById('quote-content').innerText}</p><p style="color:#9E9791;margin-bottom:30px;">—— ${document.getElementById('quote-source').innerText}</p><div style="color:#7CA1B3;font-style:italic;border-top:1px dashed #eee;padding-top:15px;">${document.getElementById('quote-comment').innerHTML}</div><div style="margin-top:30px;font-size:0.75rem;color:#D4B483;">機智的鹹魚生活</div></div>`; document.body.appendChild(temp); html2canvas(temp.firstChild,{scale:2,backgroundColor:null}).then(c=>{const a=document.createElement('a');a.download=`salted-fish-${Date.now()}.png`;a.href=c.toDataURL();a.click();document.body.removeChild(temp);showToast('✅ 下載完成');}); }
+        function saveCardImage(e) { e.stopPropagation(); showToast('📸 截圖中...'); const temp=document.createElement('div'); temp.style.position='fixed'; temp.style.top='0'; temp.style.zIndex='-9'; temp.style.width='350px'; temp.innerHTML=`<div style="background:#FDFBF7;border:2px solid #7CA1B3;border-radius:24px;padding:40px 30px;text-align:center;font-family:'Noto Sans TC';"><p style="font-family:'Noto Serif TC';font-size:1.4rem;color:#5A524C;margin-bottom:20px;">${document.getElementById('quote-content').innerText}</p><p style="color:#9E9791;margin-bottom:30px;">—— ${document.getElementById('quote-source').innerText}</p><div style="width: 40%; height: 1px; border-top: 1px dashed #D6D0C8; margin: 30px auto;"></div><div style="color:#7CA1B3;font-style:italic;padding-top:15px;">${document.getElementById('quote-comment').innerHTML}</div><div style="margin-top:30px;font-size:0.75rem;color:#D4B483;">機智的鹹魚生活</div></div>`; document.body.appendChild(temp); html2canvas(temp.firstChild,{scale:2,backgroundColor:null}).then(c=>{const a=document.createElement('a');a.download=`salted-fish-${Date.now()}.png`;a.href=c.toDataURL();a.click();document.body.removeChild(temp);showToast('✅ 下載完成');}); }
         function showSection(id, btn) { 
             if (id !== 'flip') {
                 const flipper = document.querySelector('.flip-container');
                 if (flipper) flipper.classList.remove('flipped');
+            }
+
+            // --- 重置 聰明鹹魚 (PUA) ---
+            if (id !== 'pua') {
+                currentPuaSelection = null;
+                document.querySelectorAll('.pua-tag').forEach(t => t.classList.remove('selected'));
+                const puaRes = document.getElementById('pua-result');
+                if (puaRes) puaRes.style.opacity = 0;
+                
+                // 重置測驗區
+                const testArea = document.getElementById('pua-test-area');
+                if (testArea) testArea.style.display = 'none';
+                const testRes = document.getElementById('test-result');
+                if (testRes) testRes.style.display = 'none';
+            }
+
+            // --- 重置 游刃有魚 (Shield) ---
+            if (id !== 'shield') {
+                currentShieldSelection = null;
+                document.querySelectorAll('.shield-tag').forEach(t => t.classList.remove('selected'));
+                const shieldRes = document.getElementById('shield-result');
+                if (shieldRes) shieldRes.style.opacity = 0;
             }
 
             document.querySelectorAll('.section').forEach(s=>s.classList.remove('active')); 
@@ -1200,7 +1200,57 @@
             copyBtn.classList.add('hidden');
 
             if (isSearch) {
-                const query = typeof item === 'string' ? item : "";
+                let query = typeof item === 'string' ? item : "";
+                query = query.trim();
+                if (!query) {
+                    renderDemoScripture("搜尋", "請輸入關鍵字", "例如：耶穌、愛、盼望");
+                    return;
+                }
+
+                // 1. 嘗試解析經文出處 (例如: "創世記 1", "Gen 1", "創 1", "John 3:16", "約 3:16")
+                // Regex: 找出 (書卷名) + (空格?) + (章數) + (選擇性:節數)
+                const refRegex = /^([\u4e00-\u9fa5]{1,10}|[a-zA-Z]{2,15}|[1-3]\s?[a-zA-Z]{2,15}|[1-3][\u4e00-\u9fa5]{1,10})\s*(\d+)([:：]\d*)?$/;
+                const match = query.match(refRegex);
+
+                if (match) {
+                    const bookInput = match[1].toLowerCase().replace(/\s/g, ''); // Remove spaces for comparison (e.g. "1 John" -> "1john")
+                    const chapterInput = parseInt(match[2]);
+                    
+                    // Search in bibleBooks
+                    const targetBook = bibleBooks.find(b => 
+                        b.name === match[1] || 
+                        b.abbr === match[1] || 
+                        b.code.toLowerCase() === bookInput ||
+                        b.name.includes(match[1]) ||
+                        (b.code.startsWith('1') && bookInput.includes('1') && b.code.toLowerCase().includes(bookInput.replace('1',''))) // naive check for 1 John etc
+                    );
+
+                    // Better fuzzy finder for books like "1 John"
+                    let foundBook = bibleBooks.find(b => b.name === match[1] || b.abbr === match[1]);
+                    if (!foundBook) {
+                        // Try strict code match
+                         foundBook = bibleBooks.find(b => b.code.toLowerCase() === bookInput);
+                    }
+                    if (!foundBook) {
+                        // Try fuzzy name match
+                        foundBook = bibleBooks.find(b => b.name.includes(match[1]));
+                    }
+                    
+                    if (foundBook) {
+                        if (chapterInput > 0 && chapterInput <= foundBook.chapters) {
+                            // Valid reference found! Switch to Reading Mode
+                            const readItem = {
+                                text: `${foundBook.name} ${chapterInput}`,
+                                bookCode: foundBook.code,
+                                chapter: chapterInput
+                            };
+                            fetchBible(readItem, false);
+                            return;
+                        }
+                    }
+                }
+
+                // 2. 關鍵字搜尋 (Bolls Life)
                 let url = `https://bolls.life/get-search/CUNP/?search=${encodeURIComponent(query)}`;
 
                 try {
@@ -1209,12 +1259,21 @@
                     const data = await res.json();
                     if (Array.isArray(data) && data.length > 0) {
                         renderScriptureBolls(data, query, true);
-                    } else if (data.error) {
-                         renderDemoScripture(query);
                     } else {
-                         renderDemoScripture(query);
+                         // Search returned empty list or error object
+                         renderDemoScripture(query, "找不到相關經文", "請嘗試其他關鍵字");
                     }
-                } catch(e) { renderDemoScripture(query); }
+                } catch(e) { 
+                    console.error(e);
+                    // 提供 Google / YouVersion 備案連結
+                    const encodedQ = encodeURIComponent(query);
+                    renderDemoScripture(query, "無法連線至資料庫", "可能是關鍵字太複雜或網路問題", `
+                        <div class="flex gap-2 mt-4">
+                            <a href="https://www.google.com/search?q=${encodedQ}+聖經經文" target="_blank" class="text-xs border border-[#D6D0C8] px-3 py-1 rounded-full hover:bg-[#F2EBE5] transition-colors text-[#5E5A54]">Google 搜尋</a>
+                            <a href="https://www.bible.com/zh-TW/search/bible?q=${encodedQ}" target="_blank" class="text-xs border border-[#D6D0C8] px-3 py-1 rounded-full hover:bg-[#F2EBE5] transition-colors text-[#5E5A54]">YouVersion</a>
+                        </div>
+                    `); 
+                }
                 return;
             }
 
@@ -1248,7 +1307,7 @@
                 renderScriptureBolls(allVerses, item.text, false);
             } catch (err) {
                 console.warn(err);
-                renderDemoScripture(item.text);
+                renderDemoScripture(item.text, "讀取失敗", "無法取得經文內容");
             }
         }
 
@@ -1285,17 +1344,18 @@
             copyBtn.classList.remove('hidden');
         }
 
-        function renderDemoScripture(title) {
+        function renderDemoScripture(title, msg = "無法連線至資料庫", subMsg = "請檢查網路或稍後再試", extraHtml = "") {
             const content = document.getElementById('bible-content');
             const titleEl = document.getElementById('bible-title');
             const tag = document.getElementById('bible-book-tag');
             const copyBtn = document.getElementById('copy-btn');
 
             titleEl.innerText = title;
-            tag.innerText = "PREVIEW MODE";
-            content.innerHTML = `<div class="h-full flex items-center justify-center text-[#94908A] font-serif flex-col gap-2">
-                <span>無法連線至資料庫</span>
-                <span class="text-xs opacity-60">請檢查網路或稍後再試</span>
+            tag.innerText = "MESSAGE"; 
+            content.innerHTML = `<div class="h-full flex items-center justify-center text-[#94908A] font-serif flex-col gap-2 p-4 text-center">
+                <span class="text-lg font-medium text-[#5E5A54]">${msg}</span>
+                <span class="text-xs opacity-60">${subMsg}</span>
+                ${extraHtml}
             </div>`;
             copyBtn.classList.add('hidden');
         }
@@ -1355,136 +1415,14 @@
             document.querySelectorAll('#flow .tab-btn').forEach(b=>b.classList.remove('active')); 
             event.target.classList.add('active'); 
         }
-
-        // --- NEW SAVINGS UI LOGIC ---
-        function renderSavingsGrid() {
-            const grid = document.getElementById('savings-grid');
-            if(!grid) return;
-            grid.innerHTML = '';
-            let total = 0;
-            let count = 0;
-            
-            for (let i=1; i<=365; i++) {
-                const s = savingsPlan[i];
-                if(s) {
-                    total+=i;
-                    count++;
-                }
-                
-                const d = document.createElement('div');
-                // Using Tailwind classes for better control inside JS generated elements
-                // Base classes
-                let classes = "aspect-square rounded-lg flex items-center justify-center text-sm cursor-pointer transition-all duration-200 border";
-                
-                if (s) {
-                    // Saved state: High contrast background (Theme Green), White text, Bold
-                    classes += " bg-[#8DA399] border-[#8DA399] text-white font-bold shadow-md transform scale-105";
-                } else {
-                    // Unsaved state: White background, lighter text
-                    classes += " bg-white border-[#EBE6DE] text-[#9E9791] hover:border-[#8DA399] hover:text-[#8DA399]";
-                }
-                
-                d.className = classes;
-                d.innerText = i;
-                d.onclick = () => confirmSave(i);
-                grid.appendChild(d);
-            }
-            
-            // Update summary text
-            const summary = document.getElementById('savings-total');
-            if(summary) {
-                summary.innerHTML = `
-                    <div class="flex flex-col items-start">
-                        <span class="text-xs text-[#9E9791] tracking-widest uppercase">Total Savings</span>
-                        <span class="text-2xl font-serif text-[#5E5A54] font-bold">$${total.toLocaleString()}</span>
-                    </div>
-                    <div class="flex flex-col items-end">
-                        <span class="text-xs text-[#9E9791]">進度 ${Math.round(count/365*100)}%</span>
-                        <span class="text-xs text-[#9E9791]">目標 $66,795</span>
-                    </div>
-                `;
-            }
-        }
-
-        function confirmSave(i) { 
-            const saved = savingsPlan[i]; 
-            showConfirm(saved ? `取消存入 $${i}?` : `確定存入 $${i}?`, () => { 
-                savingsPlan[i] = !saved; 
-                saveToStorage('savingsPlan', JSON.stringify(savingsPlan)); 
-                renderSavingsGrid(); 
-                if(!saved) showToast(`💰 存入 $${i}！`); 
-            }); 
-        }
-        
-        // 新增：隨機存錢功能
-        function randomSave() {
-            let available = [];
-            for (let i = 1; i <= 365; i++) {
-                if (!savingsPlan[i]) {
-                    available.push(i);
-                }
-            }
-            
-            if (available.length === 0) {
-                showToast('🎉 恭喜！你已經存滿了所有金額！');
-                return;
-            }
-
-            const randomIndex = Math.floor(Math.random() * available.length);
-            const amountToSave = available[randomIndex];
-
-            savingsPlan[amountToSave] = true;
-            saveToStorage('savingsPlan', JSON.stringify(savingsPlan));
-            renderSavingsGrid();
-            
-            showToast(`🎲 命運幫你存了 $${amountToSave} ！`);
-        }
-
-        // --- NEW WISHLIST UI LOGIC ---
-        function renderWishlist() {
-            const list = document.getElementById('wish-list');
-            if(!list) return;
-            list.innerHTML = '';
-            
-            if(wishlist.length===0) {
-                list.innerHTML = `
-                    <div class="flex flex-col items-center justify-center py-10 text-[#D6D0C8] gap-3">
-                        <span class="text-4xl opacity-50">✨</span>
-                        <span class="text-sm font-serif italic">寫下你的願望，交託給神...</span>
-                    </div>
-                `;
-                return;
-            }
-            
-            wishlist.slice().reverse().forEach(w => {
-                const d = document.createElement('div');
-                // Card style for wish item
-                d.className = `p-4 rounded-xl border mb-3 transition-all flex items-center justify-between group ${w.fulfilled ? 'bg-[#F9F7F5] border-transparent opacity-60' : 'bg-white border-[#EBE6DE] hover:border-[#C8A8A4]'}`;
-                
-                d.innerHTML = `
-                    <div class="flex-1 min-w-0 pr-4">
-                        <div class="text-[#5E5A54] font-medium truncate ${w.fulfilled ? 'line-through text-[#9E9791]' : ''}">${w.content}</div>
-                        <div class="text-xs text-[#A68C76] font-mono mt-1">$${w.cost ? parseInt(w.cost).toLocaleString() : '--'}</div>
-                    </div>
-                    <div class="flex gap-2 shrink-0 opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity">
-                        <button class="p-2 rounded-full hover:bg-[#F2EBE5] text-[#8DA399] transition-colors" onclick="toggleWishStatus(${w.id})">
-                            ${w.fulfilled ? '↩️' : '🎁'}
-                        </button>
-                        <button class="p-2 rounded-full hover:bg-[#F2EBE5] text-[#C8A8A4] hover:text-red-400 transition-colors" onclick="deleteWish(${w.id})">
-                            🗑️
-                        </button>
-                    </div>
-                `;
-                list.appendChild(d);
-            });
-        }
-
+        function renderSavingsGrid() { const grid = document.getElementById('savings-grid'); if(!grid) return; grid.innerHTML = ''; let total = 0; for (let i=1; i<=365; i++) { const s = savingsPlan[i]; if(s) total+=i; const d = document.createElement('div'); let classes = "aspect-square rounded-lg flex items-center justify-center text-sm cursor-pointer transition-all duration-200 border"; if (s) { classes += " bg-[#8DA399] border-[#8DA399] text-white font-bold shadow-md transform scale-105"; } else { classes += " bg-white border-[#EBE6DE] text-[#9E9791] hover:border-[#8DA399] hover:text-[#8DA399]"; } d.className = classes; d.innerText = i; d.onclick = () => confirmSave(i); grid.appendChild(d); } const summary = document.getElementById('savings-total'); if(summary) { summary.innerHTML = `<div class="flex flex-col items-start"><span class="text-xs text-[#9E9791] tracking-widest uppercase">Total Savings</span><span class="text-2xl font-serif text-[#5E5A54] font-bold">$${total.toLocaleString()}</span></div><div class="flex flex-col items-end"><span class="text-xs text-[#9E9791]">進度 ${Math.round(savingsPlan.filter(Boolean).length/365*100)}%</span><span class="text-xs text-[#9E9791]">目標 $66,795</span></div>`; } }
+        function confirmSave(i) { const saved = savingsPlan[i]; showConfirm(saved?`取消存入 $${i}?`:`存入 $${i}?`, ()=>{ savingsPlan[i]=!saved; saveToStorage('savingsPlan', JSON.stringify(savingsPlan)); renderSavingsGrid(); if(!saved) showToast(`💰 存入 $${i}！`); }); }
+        function randomSave() { let available = []; for (let i = 1; i <= 365; i++) { if (!savingsPlan[i]) available.push(i); } if (available.length === 0) { showToast('🎉 恭喜！你已經存滿了所有金額！'); return; } const randomIndex = Math.floor(Math.random() * available.length); const amountToSave = available[randomIndex]; savingsPlan[amountToSave] = true; saveToStorage('savingsPlan', JSON.stringify(savingsPlan)); renderSavingsGrid(); showToast(`🎲 命運幫你存了 $${amountToSave} ！`); }
+        function renderWishlist() { const list = document.getElementById('wish-list'); if(!list) return; list.innerHTML = ''; if(wishlist.length===0) { list.innerHTML='<div class="flex flex-col items-center justify-center py-10 text-[#D6D0C8] gap-3"><span class="text-4xl opacity-50">✨</span><span class="text-sm font-serif italic">寫下你的願望，交託給神...</span></div>'; return; } wishlist.slice().reverse().forEach(w => { const d = document.createElement('div'); d.className = `p-4 rounded-xl border mb-3 transition-all flex items-center justify-between group ${w.fulfilled ? 'bg-[#F9F7F5] border-transparent opacity-60' : 'bg-white border-[#EBE6DE] hover:border-[#C8A8A4]'}`; d.innerHTML = `<div class="flex-1 min-w-0 pr-4"><div class="text-[#5E5A54] font-medium truncate ${w.fulfilled ? 'line-through text-[#9E9791]' : ''}">${w.content}</div><div class="text-xs text-[#A68C76] font-mono mt-1">$${w.cost ? parseInt(w.cost).toLocaleString() : '--'}</div></div><div class="flex gap-2 shrink-0 opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity"><button class="p-2 rounded-full hover:bg-[#F2EBE5] text-[#8DA399] transition-colors" onclick="toggleWishStatus(${w.id})">${w.fulfilled ? '↩️' : '🎁'}</button><button class="p-2 rounded-full hover:bg-[#F2EBE5] text-[#C8A8A4] hover:text-red-400 transition-colors" onclick="deleteWish(${w.id})">🗑️</button></div>`; list.appendChild(d); }); }
         function addWish() { const i1 = document.getElementById('new-wish-input'), i2 = document.getElementById('new-wish-cost'); if(!i1.value.trim()) return; wishlist.push({id:Date.now(), content:i1.value.trim(), cost:i2.value, fulfilled:false}); saveToStorage('wishlist', JSON.stringify(wishlist)); i1.value=''; i2.value=''; renderWishlist(); }
         function toggleWishStatus(id) { const w = wishlist.find(i=>i.id===id); if(w) { w.fulfilled=!w.fulfilled; saveToStorage('wishlist', JSON.stringify(wishlist)); renderWishlist(); } }
         function deleteWish(id) { showConfirm("刪除願望？", ()=>{ wishlist = wishlist.filter(i=>i.id!==id); saveToStorage('wishlist', JSON.stringify(wishlist)); renderWishlist(); }); }
-        
         function refreshFinancialEncouragement() { const el = document.getElementById('financial-encouragement'); if(el) el.innerText = financialEncouragements[Math.floor(Math.random() * financialEncouragements.length)]; }
-        
         async function shareNote() {
             const date = document.getElementById('journal-date-picker').value;
             const mood = document.getElementById('note-mood').value || "";
