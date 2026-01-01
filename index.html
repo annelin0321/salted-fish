@@ -336,6 +336,8 @@
                         <button class="preservative-btn" onclick="getPreservative()">⚠️ 領取屬靈防腐劑 (急救用)</button>
                         <div id="preservative-display" class="preservative-box"></div>
                     </div>
+                    <!-- 修改按鈕文字為 刷新今日小語 -->
+                    <button class="btn-icon" onclick="refreshDailyWord()">🔄 刷新今日小語</button>
                     <div class="bible-plan-panel">
                         <h3 style="font-family:'Noto Serif TC'; font-size:1.1rem; margin-bottom:5px;">鹹魚醃漬中</h3>
                         <p class="panel-desc">「立志做一條用聖經醃漬的鹹魚！每天撒點鹽（讀經），生活會更香喔。」</p>
@@ -686,7 +688,7 @@
 
                 <div style="margin-top: 25px;">
                     <p class="ai-note">💡 本站所有文案皆由 AI 與鹹魚協同醃漬而成，僅供娛樂。</p>
-                    <p style="font-size: 0.65rem; color: #CCC;">Ver 4.1 (Tag Strip Fix)</p>
+                    <p style="font-size: 0.65rem; color: #CCC;">Ver 4.3 (HTML Tag Strip)</p>
                     <p>&copy; 2026機智的鹹魚生活 | 耶穌加油站 x 微光新事</p>
                 </div>
             </footer>
@@ -1062,6 +1064,16 @@
             if (id !== 'flip') {
                 const flipper = document.querySelector('.flip-container');
                 if (flipper) flipper.classList.remove('flipped');
+            }
+
+            // --- 重置 首頁 (Preservative) ---
+            if (id !== 'home') {
+                 const preservativeDisplay = document.getElementById('preservative-display');
+                 if (preservativeDisplay) {
+                     preservativeDisplay.style.opacity = 0;
+                     // Optional: clear text after transition
+                     setTimeout(() => { if(preservativeDisplay) preservativeDisplay.innerText = ''; }, 500);
+                 }
             }
 
             // --- 重置 聰明鹹魚 (PUA) ---
@@ -1622,7 +1634,11 @@
                     }
                     
                     if(textToCopy) {
-                        copyText(textToCopy, "已複製經文");
+                        copyText(textToCopy, selectedVerses.size > 0 ? "已複製選取經文" : "已複製整章經文");
+                        
+                        // Clear selection UI and state
+                        selectedVerses.clear();
+                        document.querySelectorAll('.verse-row.selected-verse').forEach(el => el.classList.remove('selected-verse'));
                     } else {
                         showToast("沒有內容可複製");
                     }
