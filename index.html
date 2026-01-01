@@ -290,6 +290,9 @@
 
         /* quote-comment override to avoid border */
         #quote-comment { font-size: 0.85rem; color: var(--accent-blue); font-style: italic; width: 85%; } 
+
+        /* Selected Verse Style */
+        .selected-verse { background-color: #F3EAF5 !important; border-left: 3px solid #B5A3BE; }
     </style>
 </head>
 <body>
@@ -683,7 +686,7 @@
 
                 <div style="margin-top: 25px;">
                     <p class="ai-note">💡 本站所有文案皆由 AI 與鹹魚協同醃漬而成，僅供娛樂。</p>
-                    <p style="font-size: 0.65rem; color: #CCC;">Ver 3.7 (Clean Search)</p>
+                    <p style="font-size: 0.65rem; color: #CCC;">Ver 4.1 (Tag Strip Fix)</p>
                     <p>&copy; 2026機智的鹹魚生活 | 耶穌加油站 x 微光新事</p>
                 </div>
             </footer>
@@ -873,8 +876,13 @@
         let yearlyKeyword = '';
         let currentPuaSelection = null, currentShieldSelection = null, currentSaltPercent = 0;
         let currentFullText = ""; // 用於複製功能
+        let selectedVerses = new Set(); // Store indices or IDs of selected verses
 
         // --- Helper Functions ---
+        function stripHtml(html) {
+           return html.replace(/<[^>]*>?/gm, '');
+        }
+
         async function fetchAndParseCSV(gid) {
             const sheetId = '2PACX-1vSdgi7Fr-SIVYoVShmmXsGD_ZSYC-nPNaWyp42Haii8fdGtKkLS6jDJ1bPXWyEnknDStJgEkI3WrrYy';
             const url = `https://docs.google.com/spreadsheets/d/e/${sheetId}/pub?gid=${gid}&single=true&output=csv`;
@@ -1184,6 +1192,9 @@
             content.innerHTML = '<div class="h-full flex flex-col items-center justify-center gap-4"><span class="loader"></span><span class="text-xs text-[#94908A] tracking-widest animate-pulse font-serif">讀取中...</span></div>';
             title.innerText = "讀取中...";
             copyBtn.classList.add('hidden');
+            
+            // Clear current selection
+            selectedVerses.clear();
 
             let startChap = item.chapter;
             let endChap = item.chapter;
@@ -1208,6 +1219,7 @@
                     const currentChap = startChap + idx;
                     chapVerses.forEach(v => {
                         v.chapter = currentChap;
+                        v.text = stripHtml(v.text); // Strip HTML here
                     });
                     allVerses = allVerses.concat(chapVerses);
                 });
@@ -1231,15 +1243,17 @@
             let html = "";
             let textBuffer = `【${title}】\n`;
 
-            records.forEach(v => {
+            records.forEach((v, index) => {
                 let text = v.text;
                 let label = `${v.verse}`;
+                // fullTextForNote used for appendToNote, which inserts into textarea, so clean text is preferred
                 const fullTextForNote = `${text} (${label})`;
                 const labelClass = "w-8 text-center";
 
                 html += `
-                    <div class="mb-2 hover:bg-[#F9F7F5] -mx-4 px-4 py-3 rounded-lg transition-colors cursor-pointer group flex gap-3 items-start" 
-                         onclick="appendToNote('${fullTextForNote}')">
+                    <div class="verse-row mb-2 hover:bg-[#F9F7F5] -mx-4 px-4 py-3 rounded-lg transition-colors cursor-pointer group flex gap-3 items-start" 
+                         data-text="${text}" data-label="${label}"
+                         onclick="toggleVerse(this)">
                         <span class="text-[10px] text-[#D6D0C8] font-mono pt-2 shrink-0 group-hover:text-[#A68C76] transition-colors ${labelClass}">${label}</span>
                         <span class="text-[#5E5A54] leading-loose group-hover:text-[#3E3A34] text-justify flex-1">${text}</span>
                     </div>
@@ -1248,8 +1262,21 @@
             });
 
             content.innerHTML = `<div class="max-w-3xl mx-auto">${html}</div>`;
-            currentFullText = textBuffer;
+            currentFullText = textBuffer; // Default copy all
             copyBtn.classList.remove('hidden');
+        }
+
+        function toggleVerse(el) {
+            el.classList.toggle('selected-verse');
+            const text = el.getAttribute('data-text');
+            const label = el.getAttribute('data-label');
+            const verseData = `${label} ${text}`;
+            
+            if (selectedVerses.has(verseData)) {
+                selectedVerses.delete(verseData);
+            } else {
+                selectedVerses.add(verseData);
+            }
         }
 
         function renderDemoScripture(title, msg = "無法連線至資料庫", subMsg = "請檢查網路或稍後再試", extraHtml = "") {
@@ -1268,19 +1295,7 @@
             copyBtn.classList.add('hidden');
         }
 
-        function appendToNote(text) {
-            const field = document.getElementById('note-scripture');
-            const prefix = field.value ? "\n" : "";
-            field.value += `${prefix}• ${text}`;
-            
-            const picker = document.getElementById('journal-date-picker');
-            const dateKey = picker.value.substring(5);
-            saveNote(dateKey, 'note-scripture', field.value);
-            
-            field.parentElement.classList.add('bg-[#FAF9F6]');
-            setTimeout(() => field.parentElement.classList.remove('bg-[#FAF9F6]'), 300);
-        }
-
+        // Renamed to saveNote but logic remains same
         function saveNote(dateKey, id, content) {
             localStorage.setItem(`${dateKey}-${id}`, content);
             const status = document.getElementById('save-status');
@@ -1342,7 +1357,7 @@
             if (navigator.share) {
                 try { await navigator.share({ title: title, text: text }); } catch (err) { console.log('分享取消'); }
             } else {
-                navigator.clipboard.writeText(text).then(() => { showToast("已複製日誌內容！"); });
+                copyText(text, "已複製日誌內容！");
             }
         }
         function downloadNote() {
@@ -1463,6 +1478,44 @@
                 }
             }
         }
+        
+        function fallbackCopyTextToClipboard(text, successMsg) {
+            var textArea = document.createElement("textarea");
+            textArea.value = text;
+            
+            // Ensure it's not visible but part of the DOM
+            textArea.style.position = "fixed";
+            textArea.style.left = "-9999px";
+            textArea.style.top = "0";
+            document.body.appendChild(textArea);
+            
+            textArea.focus();
+            textArea.select();
+
+            try {
+                var successful = document.execCommand('copy');
+                if(successful) showToast(successMsg);
+                else showToast("複製失敗，請手動複製");
+            } catch (err) {
+                console.error('Fallback: Oops, unable to copy', err);
+                showToast("複製失敗");
+            }
+
+            document.body.removeChild(textArea);
+        }
+
+        function copyText(text, successMsg = "已複製") {
+             if (navigator.clipboard && navigator.clipboard.writeText) {
+                 navigator.clipboard.writeText(text)
+                     .then(() => showToast(successMsg))
+                     .catch(err => {
+                         console.warn("Clipboard API failed, trying fallback...", err);
+                         fallbackCopyTextToClipboard(text, successMsg);
+                     });
+             } else {
+                 fallbackCopyTextToClipboard(text, successMsg);
+             }
+        }
 
         function initData() {
             // Force Migration to New Key to fix "undefined" issues
@@ -1551,7 +1604,28 @@
             const copyBtn = document.getElementById('copy-btn');
             if(copyBtn) {
                 copyBtn.addEventListener('click', () => {
-                    navigator.clipboard.writeText(currentFullText).then(() => showToast("已複製經文"));
+                    let textToCopy = "";
+                    if (selectedVerses.size > 0) {
+                        // Copy selected verses
+                        // We need to sort them to maintain order
+                        const verses = document.querySelectorAll('.verse-row.selected-verse');
+                        let buffer = "";
+                        verses.forEach(v => {
+                             const t = v.getAttribute('data-text');
+                             const l = v.getAttribute('data-label');
+                             buffer += `${l} ${t}\n`;
+                        });
+                        textToCopy = buffer;
+                    } else {
+                        // Copy all
+                        textToCopy = currentFullText;
+                    }
+                    
+                    if(textToCopy) {
+                        copyText(textToCopy, "已複製經文");
+                    } else {
+                        showToast("沒有內容可複製");
+                    }
                 });
             }
 
