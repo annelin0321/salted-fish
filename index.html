@@ -337,7 +337,7 @@
                         <div id="preservative-display" class="preservative-box"></div>
                     </div>
                     <!-- 修改按鈕文字為 刷新今日小語 -->
-                    <button class="btn-icon" onclick="refreshDailyWord()">🔄 刷新今日小語</button>
+                    
                     <div class="bible-plan-panel">
                         <h3 style="font-family:'Noto Serif TC'; font-size:1.1rem; margin-bottom:5px;">鹹魚醃漬中</h3>
                         <p class="panel-desc">「立志做一條用聖經醃漬的鹹魚！每天撒點鹽（讀經），生活會更香喔。」</p>
@@ -417,43 +417,42 @@
                             <!-- JS 生成 -->
                         </div>
 
-                        <!-- 中欄：聖經閱讀器 -->
-                        <section class="lg:col-span-5 flex flex-col bg-white rounded-2xl shadow-[0_4px_20px_-10px_rgba(0,0,0,0.05)] border border-[#EBE6DE] overflow-hidden min-h-[350px] lg:h-full relative group">
+                        <!-- 整合區：閱讀/筆記區塊 -->
+                        <section class="lg:col-span-10 flex flex-col bg-white rounded-2xl shadow-[0_4px_20px_-10px_rgba(0,0,0,0.05)] border border-[#EBE6DE] overflow-hidden min-h-[500px] lg:h-full relative group">
                             <div class="h-1 w-full bg-[#F2EBE5] shrink-0"></div>
-                            <div class="px-8 py-5 border-b border-[#F5F2EA] flex justify-between items-start bg-white sticky top-0 z-10 shrink-0">
-                                <div class="flex flex-col gap-1 overflow-hidden">
-                                    <span class="text-[10px] font-bold text-[#A68C76] uppercase tracking-widest" id="bible-book-tag">SCRIPTURE</span>
-                                    <h2 id="bible-title" class="text-xl text-[#5E5A54] font-medium tracking-wide truncate pr-2 m-0">請選擇進度</h2>
-                                </div>
-                                <button id="copy-btn" class="hidden flex items-center gap-1.5 px-3 py-1.5 text-[#94908A] hover:text-[#A68C76] hover:bg-[#FAF9F6] rounded-lg text-xs transition-all tracking-widest shrink-0">
-                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path></svg>
-                                    複製
-                                </button>
-                            </div>
-                            <div id="bible-content" class="flex-1 overflow-y-auto p-8 bible-text text-[#5E5A54] bg-white scroll-smooth selection:bg-[#F2EBE5] selection:text-[#5E5A54] journal-scroll min-h-[250px] lg:h-auto flex flex-col justify-center">
-                                <div class="h-full flex flex-col items-center justify-center text-[#B0AAA3] gap-6 text-center">
-                                    <div class="w-20 h-20 rounded-full bg-[#FDFCF8] border border-[#F2EBE5] flex items-center justify-center">
-                                        <span class="text-3xl opacity-40 grayscale">📖</span>
+                            
+                            <!-- BIBLE READER VIEW -->
+                            <div id="view-reader" class="flex flex-col h-full">
+                                <div class="px-8 py-5 border-b border-[#F5F2EA] flex justify-between items-start bg-white sticky top-0 z-10 shrink-0">
+                                    <div class="flex flex-col gap-1 overflow-hidden">
+                                        <span class="text-[10px] font-bold text-[#A68C76] uppercase tracking-widest" id="bible-book-tag">SCRIPTURE</span>
+                                        <h2 id="bible-title" class="text-xl text-[#5E5A54] font-medium tracking-wide truncate pr-2 m-0">請選擇進度</h2>
                                     </div>
-                                    <div>
-                                        <!-- 修復：讓這段文字在小螢幕也能置中顯示 -->
-                                        <p class="text-base font-serif text-[#94908A] whitespace-normal px-4">準備好被醃漬了嗎？</p>
-                                        <p class="text-xs mt-2 font-light tracking-wider opacity-60 whitespace-normal px-4">點擊上方進度，讓神的話語慢慢入味。</p>
+                                    <button id="copy-btn" class="hidden flex items-center gap-1.5 px-3 py-1.5 text-[#94908A] hover:text-[#A68C76] hover:bg-[#FAF9F6] rounded-lg text-xs transition-all tracking-widest shrink-0">
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path></svg>
+                                        複製
+                                    </button>
+                                </div>
+                                <div id="bible-content" class="flex-1 overflow-y-auto p-8 bible-text text-[#5E5A54] bg-white scroll-smooth selection:bg-[#F2EBE5] selection:text-[#5E5A54] journal-scroll min-h-[300px] lg:h-auto flex flex-col justify-center">
+                                    <div class="h-full flex flex-col items-center justify-center text-[#B0AAA3] gap-6 text-center">
+                                        <div class="w-20 h-20 rounded-full bg-[#FDFCF8] border border-[#F2EBE5] flex items-center justify-center">
+                                            <span class="text-3xl opacity-40 grayscale">📖</span>
+                                        </div>
+                                        <div>
+                                            <p class="text-base font-serif text-[#94908A] whitespace-normal px-4">準備好被醃漬了嗎？</p>
+                                            <p class="text-xs mt-2 font-light tracking-wider opacity-60 whitespace-normal px-4">點擊上方進度，讓神的話語慢慢入味。</p>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                        </section>
 
-                        <!-- 右欄：靈修筆記 -->
-                        <section class="lg:col-span-5 flex flex-col h-full min-h-[500px]">
-                            <div class="bg-white rounded-2xl shadow-[0_4px_20px_-10px_rgba(0,0,0,0.05)] border border-[#EBE6DE] flex-1 flex flex-col overflow-hidden">
-                                <div class="h-1 w-full bg-[#EBE6DE] shrink-0"></div>
+                            <!-- NOTE VIEW (Hidden by default) -->
+                            <div id="view-note" class="flex flex-col h-full hidden">
                                 <div class="px-8 py-5 border-b border-[#F5F2EA] flex flex-col gap-4 shrink-0">
                                     <div class="flex items-center justify-between">
                                         <h3 class="font-serif text-lg text-[#5E5A54] flex items-center gap-3 m-0">
                                             <span class="text-lg opacity-60">✍🏻</span> 醃漬筆記
                                         </h3>
-                                        <!-- 修改：改為文字按鈕 -->
                                         <div class="flex items-center gap-3">
                                             <button onclick="shareNote()" class="text-xs text-[#A68C76] hover:text-[#5E5A54] transition-colors font-medium tracking-widest px-2 py-1 hover:bg-[#F9F7F5] rounded">分享</button>
                                             <button onclick="downloadNote()" class="text-xs text-[#A68C76] hover:text-[#5E5A54] transition-colors font-medium tracking-widest px-2 py-1 hover:bg-[#F9F7F5] rounded">下載</button>
@@ -688,7 +687,7 @@
 
                 <div style="margin-top: 25px;">
                     <p class="ai-note">💡 本站所有文案皆由 AI 與鹹魚協同醃漬而成，僅供娛樂。</p>
-                    <p style="font-size: 0.65rem; color: #CCC;">Ver 4.3 (HTML Tag Strip)</p>
+                    <p style="font-size: 0.65rem; color: #CCC;">Ver 6.0 (Copy Reset Fix)</p>
                     <p>&copy; 2026機智的鹹魚生活 | 耶穌加油站 x 微光新事</p>
                 </div>
             </footer>
@@ -802,6 +801,7 @@
                 <ul class="list-disc pl-5 space-y-1">
                     <li><strong>每日進度</strong>：系統自動安排 <strong>舊約 + 新約 + 詩篇 + 箴言</strong>。</li>
                     <li><strong>自動經文載入</strong>：點擊進度卡片，系統會自動幫您抓取經文，直接閱讀。</li>
+                    <li><strong>醃漬筆記</strong>：記錄您的靈修感動，現在整合在經文閱讀區旁邊，使用更方便。</li>
                 </ul>
 
                 <h4>3. 鹹魚翻身（抽卡）</h4>
@@ -1006,6 +1006,9 @@
                 if (psRead) psRead.forEach(r => fullReadings.push({...r, type: '詩'}));
                 if (proRead) proRead.forEach(r => fullReadings.push({...r, type: '箴'}));
 
+                // Add note item
+                fullReadings.push({ type: '筆記', abbr: '靈修筆記', isNote: true });
+
                 let mainText = "";
                 if (otRead) mainText += otRead[0].abbr + " "; 
                 if (ntRead) mainText += ntRead[0].abbr;
@@ -1177,7 +1180,13 @@
                     </div>
                     <span class="text-base font-serif text-[#5E5A54] group-hover:text-[#3E3A34] tracking-wide">${item.abbr}</span>
                 `;
-                btn.onclick = () => fetchBible(item);
+                
+                if (item.isNote) {
+                    btn.onclick = () => showNotes();
+                } else {
+                    btn.onclick = () => showReader(item);
+                }
+                
                 return btn;
             };
 
@@ -1185,7 +1194,13 @@
                 const btn = document.createElement('button');
                 btn.className = "flex-shrink-0 px-3 py-4 border border-[#D6D0C8] rounded-xl bg-white text-xs hover:bg-[#F2EBE5] hover:border-[#A68C76] transition-colors flex flex-col items-center justify-center gap-1 min-w-[70px] shadow-sm";
                 btn.innerHTML = `<span class="text-[10px] text-[#B0AAA3] tracking-widest scale-90 origin-bottom">${item.type}</span><span class="font-serif text-[#5E5A54] text-sm">${item.abbr}</span>`;
-                btn.onclick = () => fetchBible(item);
+                
+                if (item.isNote) {
+                    btn.onclick = () => showNotes();
+                } else {
+                    btn.onclick = () => showReader(item);
+                }
+                
                 return btn;
             };
 
@@ -1193,6 +1208,17 @@
                 planList.appendChild(createBtn(item));
                 mobilePlanList.appendChild(createMobileBtn(item));
             });
+        }
+        
+        function showReader(item) {
+            document.getElementById('view-reader').classList.remove('hidden');
+            document.getElementById('view-note').classList.add('hidden');
+            fetchBible(item);
+        }
+        
+        function showNotes() {
+            document.getElementById('view-reader').classList.add('hidden');
+            document.getElementById('view-note').classList.remove('hidden');
         }
 
         async function fetchBible(item) {
