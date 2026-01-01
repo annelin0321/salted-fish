@@ -385,20 +385,6 @@
                                 </div>
                             </div>
 
-                            <!-- 搜尋框 -->
-                            <div class="flex-1 max-w-md relative">
-                                <div class="relative group w-full">
-                                    <input type="text" id="journal-search-input" 
-                                           class="serif-font block w-full pl-4 pr-10 py-2 border border-[#EBE6DE] rounded-full leading-5 bg-[#FDFCF8] text-[#5E5A54] placeholder-[#B0AAA3] focus:outline-none focus:bg-white focus:border-[#A68C76] focus:ring-1 focus:ring-[#A68C76]/20 text-sm transition-all" 
-                                           placeholder="搜尋經文...">
-                                    <button id="journal-search-btn" class="absolute inset-y-0 right-0 pr-3 flex items-center cursor-pointer text-[#94908A] hover:text-[#A68C76] transition-colors">
-                                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                                        </svg>
-                                    </button>
-                                </div>
-                            </div>
-
                             <!-- 儲存狀態 -->
                             <div class="flex items-center shrink-0 w-16 justify-end hidden md:flex">
                                 <div id="save-status" class="text-xs font-medium text-[#8DA399] opacity-0 transition-opacity duration-500 flex items-center gap-1 bg-[#8DA399]/10 px-3 py-1 rounded-full tracking-wider">
@@ -697,7 +683,7 @@
 
                 <div style="margin-top: 25px;">
                     <p class="ai-note">💡 本站所有文案皆由 AI 與鹹魚協同醃漬而成，僅供娛樂。</p>
-                    <p style="font-size: 0.65rem; color: #CCC;">Ver 3.6 (Smart Search)</p>
+                    <p style="font-size: 0.65rem; color: #CCC;">Ver 3.7 (Clean Search)</p>
                     <p>&copy; 2026機智的鹹魚生活 | 耶穌加油站 x 微光新事</p>
                 </div>
             </footer>
@@ -1189,7 +1175,7 @@
             });
         }
 
-        async function fetchBible(item, isSearch = false) {
+        async function fetchBible(item) {
             const content = document.getElementById('bible-content');
             const title = document.getElementById('bible-title');
             const tag = document.getElementById('bible-book-tag');
@@ -1198,84 +1184,6 @@
             content.innerHTML = '<div class="h-full flex flex-col items-center justify-center gap-4"><span class="loader"></span><span class="text-xs text-[#94908A] tracking-widest animate-pulse font-serif">讀取中...</span></div>';
             title.innerText = "讀取中...";
             copyBtn.classList.add('hidden');
-
-            if (isSearch) {
-                let query = typeof item === 'string' ? item : "";
-                query = query.trim();
-                if (!query) {
-                    renderDemoScripture("搜尋", "請輸入關鍵字", "例如：耶穌、愛、盼望");
-                    return;
-                }
-
-                // 1. 嘗試解析經文出處 (例如: "創世記 1", "Gen 1", "創 1", "John 3:16", "約 3:16")
-                // Regex: 找出 (書卷名) + (空格?) + (章數) + (選擇性:節數)
-                const refRegex = /^([\u4e00-\u9fa5]{1,10}|[a-zA-Z]{2,15}|[1-3]\s?[a-zA-Z]{2,15}|[1-3][\u4e00-\u9fa5]{1,10})\s*(\d+)([:：]\d*)?$/;
-                const match = query.match(refRegex);
-
-                if (match) {
-                    const bookInput = match[1].toLowerCase().replace(/\s/g, ''); // Remove spaces for comparison (e.g. "1 John" -> "1john")
-                    const chapterInput = parseInt(match[2]);
-                    
-                    // Search in bibleBooks
-                    const targetBook = bibleBooks.find(b => 
-                        b.name === match[1] || 
-                        b.abbr === match[1] || 
-                        b.code.toLowerCase() === bookInput ||
-                        b.name.includes(match[1]) ||
-                        (b.code.startsWith('1') && bookInput.includes('1') && b.code.toLowerCase().includes(bookInput.replace('1',''))) // naive check for 1 John etc
-                    );
-
-                    // Better fuzzy finder for books like "1 John"
-                    let foundBook = bibleBooks.find(b => b.name === match[1] || b.abbr === match[1]);
-                    if (!foundBook) {
-                        // Try strict code match
-                         foundBook = bibleBooks.find(b => b.code.toLowerCase() === bookInput);
-                    }
-                    if (!foundBook) {
-                        // Try fuzzy name match
-                        foundBook = bibleBooks.find(b => b.name.includes(match[1]));
-                    }
-                    
-                    if (foundBook) {
-                        if (chapterInput > 0 && chapterInput <= foundBook.chapters) {
-                            // Valid reference found! Switch to Reading Mode
-                            const readItem = {
-                                text: `${foundBook.name} ${chapterInput}`,
-                                bookCode: foundBook.code,
-                                chapter: chapterInput
-                            };
-                            fetchBible(readItem, false);
-                            return;
-                        }
-                    }
-                }
-
-                // 2. 關鍵字搜尋 (Bolls Life)
-                let url = `https://bolls.life/get-search/CUNP/?search=${encodeURIComponent(query)}`;
-
-                try {
-                    const res = await fetch(url);
-                    if(!res.ok) throw new Error("Network");
-                    const data = await res.json();
-                    if (Array.isArray(data) && data.length > 0) {
-                        renderScriptureBolls(data, query, true);
-                    } else {
-                         // Search returned empty list or error object
-                         renderDemoScripture(query, "找不到相關經文", "請嘗試其他關鍵字");
-                    }
-                } catch(e) { 
-                    console.error(e);
-                    // 提供 Google / YouVersion 備案連結
-                    const encodedQ = encodeURIComponent(query);
-                    renderDemoScripture(query, "無法連線至資料庫", "可能是關鍵字太複雜或網路問題", `
-                        <div class="flex gap-2 mt-4">
-                            <a href="https://www.google.com/search?q=${encodedQ}+聖經經文" target="_blank" class="text-xs border border-[#D6D0C8] px-3 py-1 rounded-full hover:bg-[#F2EBE5] transition-colors text-[#5E5A54]">Google 搜尋</a>
-                            <a href="https://www.bible.com/zh-TW/search/bible?q=${encodedQ}" target="_blank" class="text-xs border border-[#D6D0C8] px-3 py-1 rounded-full hover:bg-[#F2EBE5] transition-colors text-[#5E5A54]">YouVersion</a>
-                        </div>
-                    `); 
-                }
-                return;
-            }
 
             let startChap = item.chapter;
             let endChap = item.chapter;
@@ -1304,30 +1212,30 @@
                     allVerses = allVerses.concat(chapVerses);
                 });
 
-                renderScriptureBolls(allVerses, item.text, false);
+                renderScriptureBolls(allVerses, item.text);
             } catch (err) {
                 console.warn(err);
                 renderDemoScripture(item.text, "讀取失敗", "無法取得經文內容");
             }
         }
 
-        function renderScriptureBolls(records, title, isSearch) {
+        function renderScriptureBolls(records, title) {
             const content = document.getElementById('bible-content');
             const titleEl = document.getElementById('bible-title');
             const tag = document.getElementById('bible-book-tag');
             const copyBtn = document.getElementById('copy-btn');
 
             titleEl.innerText = title;
-            tag.innerText = isSearch ? "SEARCH RESULT" : "SCRIPTURE";
+            tag.innerText = "SCRIPTURE";
             
             let html = "";
             let textBuffer = `【${title}】\n`;
 
             records.forEach(v => {
                 let text = v.text;
-                let label = isSearch ? `${v.chapter}:${v.verse}` : `${v.verse}`;
+                let label = `${v.verse}`;
                 const fullTextForNote = `${text} (${label})`;
-                const labelClass = isSearch ? "w-20 text-right pr-2" : "w-8 text-center";
+                const labelClass = "w-8 text-center";
 
                 html += `
                     <div class="mb-2 hover:bg-[#F9F7F5] -mx-4 px-4 py-3 rounded-lg transition-colors cursor-pointer group flex gap-3 items-start" 
@@ -1637,24 +1545,6 @@
                 checkInBtn.addEventListener('click', () => {
                     const dateKey = picker.value.substring(5); // MM-DD
                     handleCheckIn(dateKey);
-                });
-            }
-
-            const searchBtn = document.getElementById('journal-search-btn');
-            if(searchBtn) {
-                searchBtn.addEventListener('click', () => {
-                    const val = document.getElementById('journal-search-input').value.trim();
-                    if(val) fetchBible(val, true);
-                });
-            }
-
-            const searchInput = document.getElementById('journal-search-input');
-            if(searchInput) {
-                searchInput.addEventListener('keypress', (e) => {
-                    if(e.key === 'Enter') {
-                        const val = document.getElementById('journal-search-input').value.trim();
-                        if(val) fetchBible(val, true);
-                    }
                 });
             }
 
