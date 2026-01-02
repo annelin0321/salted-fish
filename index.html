@@ -864,7 +864,7 @@
         const financialEncouragements = ["積少成多，上帝的供應也是如此。", "你的每一個銅板，都是對未來的信心。", "不要為明天憂慮，因為明天自有明天的憂慮。", "耶和華以勒，祂必有預備。", "理財也是一種管家職分，你做得很好！", "哪怕只是存下一塊錢，也是向夢想靠近的一步。", "富足不在於擁有多少，而在於知足。", "種什麼收什麼，現在的儲蓄是未來收成。", "你管理金錢的方式，反映了你對上帝的信靠。", "錢是僕人，不是主人。讓它為愛神愛人效力。"];
         const keywords = ["突破", "安息", "重建", "豐盛", "勇氣", "喜樂", "專注", "謙卑", "信心", "愛", "智慧", "耐心", "更新", "感恩", "忠心"];
         
-        let onlineSaltStatusMap = [], onlinePreservativePool = [], onlineFlipQuotes = [], dailyQuotesPool = [];
+        let onlineSaltStatusMap = [], onlinePreservativePool = [], onlineFlipQuotes = [], dailyQuotesPool = [], onlineShieldData = [];
         const saltStatusMap = [{ min: 0, max: 10, title: "含鹽量 5%：新鮮淡水魚", desc: "警告：你太新鮮了，完全沒有醃漬痕跡。建議立刻去聽首詩歌壓壓驚。" }, { min: 11, max: 30, title: "含鹽量 20%：微鹹小鮮肉", desc: "微鹹。大概就是薯條忘記加鹽的程度，屬靈味道淡如水。" }, { min: 31, max: 60, title: "含鹽量 50%：入味標準款", desc: "醃漬得恰到好處！有屬靈的氣質，也有屬世的快樂，生活在恩典的平衡點。" }, { min: 61, max: 90, title: "含鹽量 80%：資深老鹹魚", desc: "太聖潔了！你現在散發出的鹽味足以讓周圍的魔鬼感到乾渴難耐。" }, { min: 91, max: 100, title: "含鹽量 99%：屬靈核彈", desc: "你已經不是鹹魚了，你是鹽本身。請喝杯珍奶平衡一下太過神聖的體質。" }];
         let preservativePool = [{ tMin: 0, tMax: 30, content: "你是神眼中的瞳人，就算你現在只是條廢魚，也是最貴的那條。" }, { tMin: 0, tMax: 50, content: "深呼吸，天塌下來有耶穌頂著，你負責躺平領受恩典就好。" }, { tMin: 0, tMax: 100, content: "不論你今天幾度，神愛你的程度始終是 100%，這才是最猛的防腐劑。" }];
         const quotes = [{ text: "凡勞苦擔重擔的人可以到我這裡來，我就使你們得安息。", source: "馬太福音 11:28", comment: "(鹹魚主廚的祕方：快去睡，別再滑手機了)" }, { text: "你們要休息，要知道我是神。", source: "詩篇 46:10", comment: "(鹹魚主廚的祕方：聽話，現在就去躺平，剩下的交給老闆)" }, { text: "喜樂的心乃是良藥，憂傷的靈使骨枯乾。", source: "箴言 17:22", comment: "(鹹魚主廚的祕方：心情好最重要，即使你只是一條鹹魚)" }];
@@ -1047,19 +1047,135 @@
         }
 
         // --- Data Loaders ---
-        async function loadOnlineQuotes() { const d = await fetchAndParseCSV('1349046456'); if(!d)return; let idx=d.headers.findIndex(h=>['text','quote'].some(k=>h.includes(k)))||0; dailyQuotesPool=[]; d.rows.forEach(l=>{const c=d.parser(l);if(c[idx])dailyQuotesPool.push(c[idx])}); refreshDailyWord(); }
-        async function loadSaltStatusMap() { const d = await fetchAndParseCSV('138033526'); if(d){ onlineSaltStatusMap=[]; d.rows.forEach(l=>{const c=d.parser(l);onlineSaltStatusMap.push({min:parseInt(c[d.headers.indexOf('min_percent')]),max:parseInt(c[d.headers.indexOf('max_percent')]),title:c[d.headers.indexOf('status_title')],desc:c[d.headers.indexOf('status_desc')]})}); } }
-        async function loadPreservativePool() { const d=await fetchAndParseCSV('159897993'); if(d){ let idx={min:d.headers.findIndex(h=>h.includes('min'))||0,max:d.headers.findIndex(h=>h.includes('max'))||1,c:d.headers.findIndex(h=>h.includes('content'))||2}; onlinePreservativePool=[]; d.rows.forEach(l=>{const c=d.parser(l);onlinePreservativePool.push({tMin:parseInt(c[idx.min]),tMax:parseInt(c[idx.max]),content:c[idx.c]})}); } }
-        async function loadFlipQuotes() { const d=await fetchAndParseCSV('1402400724'); if(d){ let idx={c:d.headers.findIndex(h=>h.includes('content'))||0,s:d.headers.findIndex(h=>h.includes('source'))||1,cm:d.headers.findIndex(h=>h.includes('comment'))||2}; onlineFlipQuotes=[]; d.rows.forEach(l=>{const c=d.parser(l);if(c[idx.c])onlineFlipQuotes.push({text:c[idx.c],source:c[idx.s]||"",comment:c[idx.cm]||""})}); } }
-        async function loadShieldData() { const d=await fetchAndParseCSV('1087555591'); if(!d){renderShieldTags();return;} let idx={l:d.headers.findIndex(h=>h.includes('label'))||0,o:d.headers.findIndex(h=>h.includes('options'))||1}; onlineShieldData=[]; d.rows.forEach(l=>{const c=d.parser(l);if(c[idx.l])onlineShieldData.push({label:c[idx.l],options:c[idx.o].split(/[|\n]/)})}); renderShieldTags(); }
+        async function loadOnlineQuotes() { 
+            const d = await fetchAndParseCSV('1349046456'); 
+            if(!d) return; 
+            let idx = d.headers.findIndex(h=>['text','quote'].some(k=>h.includes(k)));
+            if (idx === -1) idx = 0;
+            dailyQuotesPool=[]; 
+            d.rows.forEach(l=>{
+                const c=d.parser(l);
+                if(c[idx]) dailyQuotesPool.push(c[idx]);
+            }); 
+            refreshDailyWord(); 
+        }
+
+        async function loadSaltStatusMap() { 
+            const d = await fetchAndParseCSV('138033526'); 
+            if(d){ 
+                onlineSaltStatusMap=[]; 
+                let idxMin = d.headers.indexOf('min_percent');
+                if (idxMin === -1) idxMin = 0;
+                let idxMax = d.headers.indexOf('max_percent');
+                if (idxMax === -1) idxMax = 1;
+                let idxTitle = d.headers.indexOf('status_title');
+                if (idxTitle === -1) idxTitle = 2;
+                let idxDesc = d.headers.indexOf('status_desc');
+                if (idxDesc === -1) idxDesc = 3;
+
+                d.rows.forEach(l=>{
+                    const c=d.parser(l);
+                    onlineSaltStatusMap.push({
+                        min:parseInt(c[idxMin]),
+                        max:parseInt(c[idxMax]),
+                        title:c[idxTitle],
+                        desc:c[idxDesc]
+                    });
+                }); 
+            } 
+        }
+
+        async function loadPreservativePool() { 
+            const d=await fetchAndParseCSV('159897993'); 
+            if(d){ 
+                let idx={
+                    min: d.headers.findIndex(h=>h.includes('min')),
+                    max: d.headers.findIndex(h=>h.includes('max')),
+                    c: d.headers.findIndex(h=>h.includes('content'))
+                }; 
+                if(idx.min === -1) idx.min = 0;
+                if(idx.max === -1) idx.max = 1;
+                if(idx.c === -1) idx.c = 2;
+
+                onlinePreservativePool=[]; 
+                d.rows.forEach(l=>{
+                    const c=d.parser(l);
+                    onlinePreservativePool.push({
+                        tMin:parseInt(c[idx.min]),
+                        tMax:parseInt(c[idx.max]),
+                        content:c[idx.c]
+                    });
+                }); 
+            } 
+        }
+
+        async function loadFlipQuotes() { 
+            const d=await fetchAndParseCSV('1402400724'); 
+            if(d){ 
+                let idx={
+                    c: d.headers.findIndex(h=>h.includes('content')),
+                    s: d.headers.findIndex(h=>h.includes('source')),
+                    cm: d.headers.findIndex(h=>h.includes('comment'))
+                }; 
+                if(idx.c === -1) idx.c = 0;
+                if(idx.s === -1) idx.s = 1;
+                if(idx.cm === -1) idx.cm = 2;
+
+                onlineFlipQuotes=[]; 
+                d.rows.forEach(l=>{
+                    const c=d.parser(l);
+                    if(c[idx.c]) onlineFlipQuotes.push({
+                        text:c[idx.c],
+                        source:c[idx.s]||"",
+                        comment:c[idx.cm]||""
+                    });
+                }); 
+            } 
+        }
+        
+        async function loadShieldData() { 
+            const d = await fetchAndParseCSV('1087555591'); 
+            if (!d) { renderShieldTags(); return; } 
+            
+            // 修正：針對使用者提供的 'label' 與 'options' 進行精確匹配
+            // 若找不到精確名稱，則嘗試模糊匹配，最後回退到索引 0 和 1
+            let idxL = d.headers.indexOf('label');
+            if (idxL === -1) idxL = d.headers.findIndex(h => h.includes('label') || h.includes('question'));
+            if (idxL === -1) idxL = 0; 
+
+            let idxO = d.headers.indexOf('options');
+            if (idxO === -1) idxO = d.headers.findIndex(h => h.includes('option') || h.includes('answer'));
+            if (idxO === -1) idxO = 1; 
+            
+            onlineShieldData = []; 
+            d.rows.forEach(l => {
+                const c = d.parser(l);
+                // 確保兩個欄位都有值才加入
+                if (c[idxL] && c[idxO]) {
+                    onlineShieldData.push({
+                        label: c[idxL].trim(),
+                        // 支援換行符號(\n)或垂直線(|)作為分隔符，並過濾空白
+                        options: c[idxO].split(/[\n|]/).map(opt => opt.trim()).filter(opt => opt.length > 0)
+                    });
+                }
+            }); 
+            
+            // 如果成功抓取到資料，重新渲染標籤
+            if (onlineShieldData.length > 0) {
+                renderShieldTags(); 
+            }
+        }
         
         async function loadPuaChecklist() {
             const d = await fetchAndParseCSV('494946164');
             if (d) {
                 let idx = {
-                    t: d.headers.findIndex(h => h.includes('question') || h.includes('題目')) || 0,
-                    w: d.headers.findIndex(h => h.includes('weight') || h.includes('權重')) || 1
+                    t: d.headers.findIndex(h => h.includes('question') || h.includes('題目')),
+                    w: d.headers.findIndex(h => h.includes('weight') || h.includes('權重'))
                 };
+                if (idx.t === -1) idx.t = 0;
+                if (idx.w === -1) idx.w = 1;
+
                 onlinePuaChecklist = [];
                 d.rows.forEach(l => {
                     const c = d.parser(l);
@@ -1074,19 +1190,22 @@
             const d = await fetchAndParseCSV('0'); // gid 0 for PUA Dictionary
             if (!d) return;
             
-            // Dynamic header mapping
+            // Dynamic header mapping with fallback
             let idx = {
-                s: d.headers.findIndex(h => h.includes('sentence') || h.includes('金句')) || 0,
-                t: d.headers.findIndex(h => h.includes('trans') || h.includes('翻譯')) || 1,
-                d: d.headers.findIndex(h => h.includes('defense') || h.includes('回擊') || h.includes('os')) || 2,
-                l: d.headers.findIndex(h => h.includes('level') || h.includes('毒性')) || 3
+                s: d.headers.findIndex(h => h.includes('sentence') || h.includes('金句')),
+                t: d.headers.findIndex(h => h.includes('trans') || h.includes('翻譯')),
+                d: d.headers.findIndex(h => h.includes('defense') || h.includes('回擊') || h.includes('os')),
+                l: d.headers.findIndex(h => h.includes('level') || h.includes('毒性'))
             };
+            if (idx.s === -1) idx.s = 0;
+            if (idx.t === -1) idx.t = 1;
+            if (idx.d === -1) idx.d = 2;
+            if (idx.l === -1) idx.l = 3;
 
             let newPuaData = {};
             d.rows.forEach((line, index) => {
                 const c = d.parser(line);
                 if (c[idx.s]) {
-                    // Using index as key since CSV doesn't strictly have keys
                     newPuaData[`online_${index}`] = {
                         sentence: c[idx.s],
                         trans: c[idx.t] || "翻譯載入中...",
@@ -1098,7 +1217,7 @@
 
             if (Object.keys(newPuaData).length > 0) {
                 puaData = newPuaData;
-                renderPuaTags(); // Refresh UI with new data
+                renderPuaTags(); 
             }
         }
 
@@ -1366,6 +1485,11 @@
             content.innerHTML = `<div class="max-w-3xl mx-auto">${html}</div>`;
             currentFullText = textBuffer; 
             copyBtn.classList.remove('hidden');
+            
+            // Fix: Reset scroll position to top
+            content.scrollTop = 0;
+            // Fix: Ensure content aligns to top, not center
+            content.classList.remove('justify-center');
         }
 
         function toggleVerse(el) {
