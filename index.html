@@ -303,9 +303,9 @@
             <h1 class="main-title">機智的鹹魚生活</h1>
             <div class="subtitle">Wise Salted Fish Life</div>
             <!-- Move Banner Here -->
-            <div onclick="showHelpModal()" class="mt-4 inline-block px-4 py-2 bg-[#F9F7F5] border border-[#EBE6DE] rounded-lg cursor-pointer hover:bg-[#F2EBE5] transition-colors shadow-sm">
-                <p class="text-xs text-[#94908A] hover:text-[#A68C76] tracking-widest flex items-center justify-center gap-1">
-                    <span class="animate-pulse">⚠️</span> 投資天國穩賺不賠，醃漬前請詳閱公開說明書
+            <div onclick="showHelpModal()" class="mt-4 inline-block px-4 py-2 bg-[#F9F7F5] border border-[#EBE6DE] rounded-lg cursor-pointer hover:bg-[#F2EBE5] transition-colors shadow-sm group">
+                <p class="text-xs text-[#94908A] group-hover:text-[#A68C76] tracking-widest flex items-center justify-center gap-1 transition-colors">
+                    <span class="animate-pulse">⚠️</span> 投資天國穩賺不賠，醃漬前請詳閱 <span class="underline decoration-dotted underline-offset-4 font-bold ml-1">公開說明書 🔗</span>
                 </p>
             </div>
         </header>
@@ -336,7 +336,6 @@
                         <button class="preservative-btn" onclick="getPreservative()">⚠️ 領取屬靈防腐劑 (急救用)</button>
                         <div id="preservative-display" class="preservative-box"></div>
                     </div>
-                    <!-- 修改按鈕文字為 刷新今日小語 -->
                     
                     <div class="bible-plan-panel">
                         <h3 style="font-family:'Noto Serif TC'; font-size:1.1rem; margin-bottom:5px;">鹹魚醃漬中</h3>
@@ -687,7 +686,7 @@
 
                 <div style="margin-top: 25px;">
                     <p class="ai-note">💡 本站所有文案皆由 AI 與鹹魚協同醃漬而成，僅供娛樂。</p>
-                    <p style="font-size: 0.65rem; color: #CCC;">Ver 6.0 (Copy Reset Fix)</p>
+                    <p style="font-size: 0.65rem; color: #CCC;">Ver 6.4 (Final)</p>
                     <p>&copy; 2026機智的鹹魚生活 | 耶穌加油站 x 微光新事</p>
                 </div>
             </footer>
@@ -867,9 +866,17 @@
         
         let onlineSaltStatusMap = [], onlinePreservativePool = [], onlineFlipQuotes = [], onlinePuaData = [], onlineShieldData = [], dailyQuotesPool = [];
         const saltStatusMap = [{ min: 0, max: 10, title: "含鹽量 5%：新鮮淡水魚", desc: "警告：你太新鮮了，完全沒有醃漬痕跡。建議立刻去聽首詩歌壓壓驚。" }, { min: 11, max: 30, title: "含鹽量 20%：微鹹小鮮肉", desc: "微鹹。大概就是薯條忘記加鹽的程度，屬靈味道淡如水。" }, { min: 31, max: 60, title: "含鹽量 50%：入味標準款", desc: "醃漬得恰到好處！有屬靈的氣質，也有屬世的快樂，生活在恩典的平衡點。" }, { min: 61, max: 90, title: "含鹽量 80%：資深老鹹魚", desc: "太聖潔了！你現在散發出的鹽味足以讓周圍的魔鬼感到乾渴難耐。" }, { min: 91, max: 100, title: "含鹽量 99%：屬靈核彈", desc: "你已經不是鹹魚了，你是鹽本身。請喝杯珍奶平衡一下太過神聖的體質。" }];
-        let preservativePool = [{ tMin: 0, tMax: 30, content: "你是神眼中的瞳人，就算你現在只是條廢魚，也是最貴的那條。" }, { tMin: 0, tMax: 50, content: "深呼吸，天塌下來有耶穌頂著，你負責躺平領受恩典就好。" }, { tMin: 0, tMax: 100, content: "不論你今天幾度，神愛你的程度始終是 100%，這才是最猛的防腐劑。" }];
+        let preservativePool = [{ tMin: 0, tMax: 30, content: "你是神眼中的瞳人，就算你現在只是條淡水魚，也是最貴的那條。" }, { tMin: 0, tMax: 50, content: "深呼吸，天塌下來有耶穌頂著，你負責躺平領受恩典就好。" }, { tMin: 0, tMax: 100, content: "不論你今天幾度，神愛你的程度始終是 100%，這才是最猛的防腐劑。" }];
         const quotes = [{ text: "凡勞苦擔重擔的人可以到我這裡來，我就使你們得安息。", source: "馬太福音 11:28", comment: "(鹹魚主廚的祕方：快去睡，別再滑手機了)" }, { text: "你們要休息，要知道我是神。", source: "詩篇 46:10", comment: "(鹹魚主廚的祕方：聽話，現在就去躺平，剩下的交給老闆)" }, { text: "喜樂的心乃是良藥，憂傷的靈使骨枯乾。", source: "箴言 17:22", comment: "(鹹魚主廚的祕方：心情好最重要，即使你只是一條鹹魚)" }];
-        const fullChecklistItems = ["你不順服就是不蒙福", "這是在訓練你的信心/破碎老我", "不可觸摸/質疑受膏者", "這是魔鬼的攻擊", "離開這間教會你就沒遮蓋了", "聖靈感動我叫你做這件事", "你要把你的以撒(最愛的)獻上"];
+        const puaTestItems = [
+            { text: "你不順服就是不蒙福", weight: 1 },
+            { text: "這是在訓練你的信心/破碎老我", weight: 2 },
+            { text: "不可觸摸/質疑受膏者", weight: 3 },
+            { text: "這是魔鬼的攻擊", weight: 1 },
+            { text: "離開這間教會你就沒遮蓋了", weight: 3 },
+            { text: "聖靈感動我叫你做這件事", weight: 2 },
+            { text: "你要把你的以撒(最愛的)獻上", weight: 3 }
+        ];
         let puaData = { love: { sentence: "你不服事/不聚會 就是不愛主！", trans: "我需要免費勞動力來填補職缺，請不要讓我難做人。", defenses: ["神的愛是無條件的。我的休息也是一種敬拜。", "馬利亞選擇了上好的福分(躺平)，是不會被奪去的。"], level: "⭐⭐⭐" }, submit: { sentence: "你要順服權柄，不要問為什麼。", trans: "閉嘴，聽我的就好。我不想解釋，也不想被挑戰。", defenses: ["順服神大於順服人.盲從絕對不是順服。", "我也在順服神給我的感動：現在先不要。"], level: "⭐⭐⭐⭐" }, touch: { sentence: "不可觸摸耶和華的受膏者！", trans: "我是特權階級，我有神聖豁免權，你不能質疑我的錯誤。", defenses: ["真理越辯越明。如果怕被摸，是不是裡面有鬼？", "我們都是君尊的祭司，大家都是受膏者，請平等對話。"], level: "⭐⭐⭐⭐⭐" } };
         const shields = { marriage: ["我在等候神所預備的亞當/夏娃，這事急不得。", "保羅說守素安常也是好的。"], salary: ["積財寶在天上，地上的數字如浮雲。", "耶和華以勒必有預備。"], serve: ["這陣子神帶領我進入曠野學習安靜的功課。", "我在調整屬靈的步伐。"] };
 
@@ -1204,10 +1211,18 @@
                 return btn;
             };
 
+            // 1. Render Scripture Buttons
             details.forEach(item => {
-                planList.appendChild(createBtn(item));
-                mobilePlanList.appendChild(createMobileBtn(item));
+                 // Skip if it's the old data-embedded note to avoid dupes if I change strategy
+                 if(item.isNote) return; 
+                 planList.appendChild(createBtn(item));
+                 mobilePlanList.appendChild(createMobileBtn(item));
             });
+
+            // 2. Render Static Note Button (Forced)
+            const noteItem = { type: '筆記', abbr: '醃漬筆記', isNote: true };
+            planList.appendChild(createBtn(noteItem));
+            mobilePlanList.appendChild(createMobileBtn(noteItem));
         }
         
         function showReader(item) {
@@ -1361,8 +1376,44 @@
             }, 200);
         }
         function togglePuaTest() { const a = document.getElementById('pua-test-area'); a.style.display = a.style.display === 'block' ? 'none' : 'block'; if(a.style.display==='block') initPuaTest(); }
-        function initPuaTest() { const l = document.getElementById('test-list'); l.innerHTML=''; fullChecklistItems.sort(()=>0.5-Math.random()).slice(0,7).forEach(t=>{ const d=document.createElement('div'); d.style.marginBottom='10px'; d.style.cursor='pointer'; d.innerHTML=`<input type="checkbox"> <span>${t}</span>`; d.onclick=(e)=>{if(e.target.tagName!=='INPUT') {const c=d.querySelector('input'); c.checked=!c.checked;}}; l.appendChild(d); }); }
-        function runPuaTest() { const n = document.querySelectorAll('#test-list input:checked').length; const r = document.getElementById('test-result'); r.style.display='block'; r.innerText = n<=2?"輕微擦傷":n<=5?"中毒偏深":"重度受災戶！快逃！"; }
+        function initPuaTest() { const l = document.getElementById('test-list'); l.innerHTML=''; puaTestItems.sort(()=>0.5-Math.random()).slice(0,7).forEach((t, index)=>{ const d=document.createElement('div'); d.style.marginBottom='10px'; d.style.cursor='pointer'; d.innerHTML=`<input type="checkbox" data-index="${index}"> <span>${t.text}</span>`; d.onclick=(e)=>{if(e.target.tagName!=='INPUT') {const c=d.querySelector('input'); c.checked=!c.checked;}}; l.appendChild(d); }); }
+        function runPuaTest() {
+            const inputs = document.querySelectorAll('#test-list input:checked');
+            let totalWeight = 0;
+            inputs.forEach(input => {
+                const index = input.getAttribute('data-index');
+                // The shuffled list in initPuaTest wasn't stored, so we need to fix this logic.
+                // Or better, let's just use the text content to find the weight since the list is short.
+                const text = input.nextElementSibling.innerText;
+                const item = puaTestItems.find(i => i.text === text);
+                if (item) totalWeight += item.weight;
+            });
+            
+            const r = document.getElementById('test-result');
+            r.style.display='block';
+            
+            let diagnosis = "";
+            let prescription = "";
+            
+            if (totalWeight === 0) {
+                diagnosis = "健康寶寶";
+                prescription = "恭喜你！擁有屬靈抗體，請繼續保持這份清醒。";
+            } else if (totalWeight <= 3) {
+                diagnosis = "輕微擦傷";
+                prescription = "多看看鹹魚語錄，增強免疫力。";
+            } else if (totalWeight <= 7) {
+                diagnosis = "中度感染";
+                prescription = "建議暫停聚會一週，去海邊走走，聽聽海浪的聲音（那是上帝的白噪音）。";
+            } else if (totalWeight <= 11) {
+                diagnosis = "重度中毒";
+                prescription = "你需要特效藥：閱讀加拉太書，並大聲朗讀『為了自由，基督釋放了我們』。";
+            } else {
+                diagnosis = "危急存亡";
+                prescription = "快逃！這不是教會，是精神時光屋。請尋求專業諮商或正常人類的協助。";
+            }
+            
+            r.innerHTML = `<strong style="color:var(--accent-purple)">診斷：${diagnosis} (毒性指數: ${totalWeight})</strong><br><br><span style="font-size:0.9rem; color:#666">💊 鹹魚藥方：<br>${prescription}</span>`;
+        }
         function renderShieldTags() {
             const c = document.getElementById('shield-tag-container'); if(!c) return; c.innerHTML=''; currentShieldSelection=null; document.getElementById('shield-result').style.opacity=0; document.getElementById('shield-text').innerText='';
             let src = onlineShieldData.length ? [...onlineShieldData] : Object.keys(shields).map(k=>({label:k==='marriage'?'什麼時候結婚?':k==='salary'?'薪水多少?':'沒來服事?', options:shields[k]}));
