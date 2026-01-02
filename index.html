@@ -512,7 +512,7 @@
                             <div class="back">
                                 <p class="quote-content" id="quote-content">正在後台熬製亮光...</p>
                                 <p id="quote-source" class="text-muted" style="font-weight:500;">--</p>
-                                <div style="width: 40%; height: 1px; border-top: 1px dashed #D6D0C8; margin: 30px 0;"></div>
+                                <div style="width: 40%; height: 1px; border-top: 1px dashed #D6D0C8; margin: 30px auto;"></div>
                                 <p id="quote-comment"> </p>
                                 <!-- 修改按鈕 -->
                                 <button class="btn-icon" onclick="saveCardImage(event)" style="margin-top:25px; font-weight:bold;">📸 拍立得打包 (存圖)</button>
@@ -686,7 +686,7 @@
 
                 <div style="margin-top: 25px;">
                     <p class="ai-note">💡 本站所有文案皆由 AI 與鹹魚協同醃漬而成，僅供娛樂。</p>
-                    <p style="font-size: 0.65rem; color: #CCC;">Ver 6.8 (PUA logic Fix)</p>
+                    <p style="font-size: 0.65rem; color: #CCC;">Ver 7.0 (Weighted PUA Quiz)</p>
                     <p>&copy; 2026機智的鹹魚生活 | 耶穌加油站 x 微光新事</p>
                 </div>
             </footer>
@@ -878,7 +878,6 @@
             { text: "你要把你的以撒(最愛的)獻上", weight: 3 }
         ];
         
-        // 內建 PUA 資料庫 (取代失效的外部連結)
         let puaData = {
             love: { sentence: "你不服事/不聚會 就是不愛主！", trans: "我需要免費勞動力來填補職缺，請不要讓我難做人。", defenses: ["神的愛是無條件的。我的休息也是一種敬拜。", "馬利亞選擇了上好的福分(躺平)，是不會被奪去的。"], level: "⭐⭐⭐" },
             submit: { sentence: "你要順服權柄，不要問為什麼。", trans: "閉嘴，聽我的就好。我不想解釋，也不想被挑戰。", defenses: ["順服神大於順服人。盲從絕對不是順服。", "我也在順服神給我的感動：現在先不要。"], level: "⭐⭐⭐⭐" },
@@ -888,7 +887,7 @@
             offering: { sentence: "信心奉獻，上帝必加倍奉還。", trans: "我們的預算缺口很大，請你掏錢。", defenses: ["奉獻是甘心樂意，不是投資理財。", "我的信心建立在神的話語，不是金錢交換。"], level: "⭐⭐⭐⭐" }
         };
 
-        const shields = { marriage: ["我在等候神所預備的亞當/夏娃，這事急不得。", "保羅說守素安常也是好的。"], salary: ["積財寶在天上，地上的數字如浮雲。", "耶和華以勒必有預備。"], serve: ["這陣子神帶領我進入曠野學習安靜的功課。", "我在調整屬靈的步伐。"] };
+        const shields = { marriage: ["我在等候神所預備的亞當/夏娃，這事急不得。", "保羅說守素安常也是好的。"], salary: ["積財寶在天上，地地上地的數字如浮雲。", "耶和華以勒必有預備。"], serve: ["這陣子神帶領我進入曠野學習安靜的功課。", "我在調整屬靈的步伐。"] };
 
         let biblePlan = [];
         let prayers = [], goals = [], userSignals = [], savingsPlan = [], wishlist = [];
@@ -896,6 +895,7 @@
         let currentPuaSelection = null, currentShieldSelection = null, currentSaltPercent = 0;
         let currentFullText = ""; // 用於複製功能
         let selectedVerses = new Set(); // Store indices or IDs of selected verses
+        let onlinePuaChecklist = []; // 線上題庫
 
         // --- Helper Functions ---
         function stripHtml(html) {
@@ -1051,8 +1051,56 @@
         async function loadSaltStatusMap() { const d = await fetchAndParseCSV('138033526'); if(d){ onlineSaltStatusMap=[]; d.rows.forEach(l=>{const c=d.parser(l);onlineSaltStatusMap.push({min:parseInt(c[d.headers.indexOf('min_percent')]),max:parseInt(c[d.headers.indexOf('max_percent')]),title:c[d.headers.indexOf('status_title')],desc:c[d.headers.indexOf('status_desc')]})}); } }
         async function loadPreservativePool() { const d=await fetchAndParseCSV('159897993'); if(d){ let idx={min:d.headers.findIndex(h=>h.includes('min'))||0,max:d.headers.findIndex(h=>h.includes('max'))||1,c:d.headers.findIndex(h=>h.includes('content'))||2}; onlinePreservativePool=[]; d.rows.forEach(l=>{const c=d.parser(l);onlinePreservativePool.push({tMin:parseInt(c[idx.min]),tMax:parseInt(c[idx.max]),content:c[idx.c]})}); } }
         async function loadFlipQuotes() { const d=await fetchAndParseCSV('1402400724'); if(d){ let idx={c:d.headers.findIndex(h=>h.includes('content'))||0,s:d.headers.findIndex(h=>h.includes('source'))||1,cm:d.headers.findIndex(h=>h.includes('comment'))||2}; onlineFlipQuotes=[]; d.rows.forEach(l=>{const c=d.parser(l);if(c[idx.c])onlineFlipQuotes.push({text:c[idx.c],source:c[idx.s]||"",comment:c[idx.cm]||""})}); } }
-        // loadPuaData removed - using local fallback
         async function loadShieldData() { const d=await fetchAndParseCSV('1087555591'); if(!d){renderShieldTags();return;} let idx={l:d.headers.findIndex(h=>h.includes('label'))||0,o:d.headers.findIndex(h=>h.includes('options'))||1}; onlineShieldData=[]; d.rows.forEach(l=>{const c=d.parser(l);if(c[idx.l])onlineShieldData.push({label:c[idx.l],options:c[idx.o].split(/[|\n]/)})}); renderShieldTags(); }
+        
+        async function loadPuaChecklist() {
+            const d = await fetchAndParseCSV('494946164');
+            if (d) {
+                let idx = {
+                    t: d.headers.findIndex(h => h.includes('question') || h.includes('題目')) || 0,
+                    w: d.headers.findIndex(h => h.includes('weight') || h.includes('權重')) || 1
+                };
+                onlinePuaChecklist = [];
+                d.rows.forEach(l => {
+                    const c = d.parser(l);
+                    if (c[idx.t]) {
+                        onlinePuaChecklist.push({ text: c[idx.t], weight: parseInt(c[idx.w]) || 1 });
+                    }
+                });
+            }
+        }
+
+        async function loadPuaData() {
+            const d = await fetchAndParseCSV('0'); // gid 0 for PUA Dictionary
+            if (!d) return;
+            
+            // Dynamic header mapping
+            let idx = {
+                s: d.headers.findIndex(h => h.includes('sentence') || h.includes('金句')) || 0,
+                t: d.headers.findIndex(h => h.includes('trans') || h.includes('翻譯')) || 1,
+                d: d.headers.findIndex(h => h.includes('defense') || h.includes('回擊') || h.includes('os')) || 2,
+                l: d.headers.findIndex(h => h.includes('level') || h.includes('毒性')) || 3
+            };
+
+            let newPuaData = {};
+            d.rows.forEach((line, index) => {
+                const c = d.parser(line);
+                if (c[idx.s]) {
+                    // Using index as key since CSV doesn't strictly have keys
+                    newPuaData[`online_${index}`] = {
+                        sentence: c[idx.s],
+                        trans: c[idx.t] || "翻譯載入中...",
+                        defenses: c[idx.d] ? c[idx.d].split(/[|\n]/).filter(x => x.trim()) : ["(微笑不語)", "主都知道"],
+                        level: c[idx.l] || "⭐⭐⭐"
+                    };
+                }
+            });
+
+            if (Object.keys(newPuaData).length > 0) {
+                puaData = newPuaData;
+                renderPuaTags(); // Refresh UI with new data
+            }
+        }
 
         // --- Core UI & Logic ---
         function refreshDailyWord() { const el=document.getElementById('daily-word'); if(el) el.innerHTML=`<span>💬 小語：${dailyQuotesPool.length?dailyQuotesPool[Math.floor(Math.random()*dailyQuotesPool.length)]:preservativePool[0].content}</span> <span class="refresh-icon">↻</span>`; }
@@ -1091,7 +1139,6 @@
                  const preservativeDisplay = document.getElementById('preservative-display');
                  if (preservativeDisplay) {
                      preservativeDisplay.style.opacity = 0;
-                     // Optional: clear text after transition
                      setTimeout(() => { if(preservativeDisplay) preservativeDisplay.innerText = ''; }, 500);
                  }
             }
@@ -1103,7 +1150,6 @@
                 const puaRes = document.getElementById('pua-result');
                 if (puaRes) puaRes.style.opacity = 0;
                 
-                // 重置測驗區
                 const testArea = document.getElementById('pua-test-area');
                 if (testArea) testArea.style.display = 'none';
                 const testRes = document.getElementById('test-result');
@@ -1221,15 +1267,12 @@
                 return btn;
             };
 
-            // 1. Render Scripture Buttons
             details.forEach(item => {
-                 // Skip if it's the old data-embedded note to avoid dupes if I change strategy
                  if(item.isNote) return; 
                  planList.appendChild(createBtn(item));
                  mobilePlanList.appendChild(createMobileBtn(item));
             });
 
-            // 2. Render Static Note Button (Forced)
             const noteItem = { type: '筆記', abbr: '醃漬筆記', isNote: true };
             planList.appendChild(createBtn(noteItem));
             mobilePlanList.appendChild(createMobileBtn(noteItem));
@@ -1256,7 +1299,6 @@
             title.innerText = "讀取中...";
             copyBtn.classList.add('hidden');
             
-            // Clear current selection
             selectedVerses.clear();
 
             let startChap = item.chapter;
@@ -1282,14 +1324,13 @@
                     const currentChap = startChap + idx;
                     chapVerses.forEach(v => {
                         v.chapter = currentChap;
-                        v.text = stripHtml(v.text); // Strip HTML here
+                        v.text = stripHtml(v.text);
                     });
                     allVerses = allVerses.concat(chapVerses);
                 });
 
                 renderScriptureBolls(allVerses, item.text);
             } catch (err) {
-                console.warn(err);
                 renderDemoScripture(item.text, "讀取失敗", "無法取得經文內容");
             }
         }
@@ -1306,11 +1347,9 @@
             let html = "";
             let textBuffer = `【${title}】\n`;
 
-            records.forEach((v, index) => {
+            records.forEach((v) => {
                 let text = v.text;
                 let label = `${v.verse}`;
-                // fullTextForNote used for appendToNote, which inserts into textarea, so clean text is preferred
-                const fullTextForNote = `${text} (${label})`;
                 const labelClass = "w-8 text-center";
 
                 html += `
@@ -1325,7 +1364,7 @@
             });
 
             content.innerHTML = `<div class="max-w-3xl mx-auto">${html}</div>`;
-            currentFullText = textBuffer; // Default copy all
+            currentFullText = textBuffer; 
             copyBtn.classList.remove('hidden');
         }
 
@@ -1358,7 +1397,6 @@
             copyBtn.classList.add('hidden');
         }
 
-        // Renamed to saveNote but logic remains same
         function saveNote(dateKey, id, content) {
             localStorage.setItem(`${dateKey}-${id}`, content);
             const status = document.getElementById('save-status');
@@ -1366,10 +1404,9 @@
             setTimeout(() => { status.style.opacity = '0'; }, 2000);
         }
 
-        // --- Other Logic (Keep existing functionality) ---
+        // --- PUA & Shield Logic ---
         function renderPuaTags() { 
             const c = document.getElementById('pua-tag-container'); if(!c) return; c.innerHTML = ''; currentPuaSelection = null; document.getElementById('pua-result').style.opacity = 0;
-            // Use local puaData
             let src = Object.keys(puaData).map(k=>({key:k, ...puaData[k]}));
             src.sort(()=>0.5-Math.random()).slice(0,7).forEach(i => {
                 const b = document.createElement('button');
@@ -1378,7 +1415,7 @@
                 b.onclick=()=>{
                     document.querySelectorAll('.pua-tag').forEach(t=>t.classList.remove('selected'));
                     b.classList.add('selected');
-                    currentPuaSelection=i; // Store the whole object
+                    currentPuaSelection = i;
                 };
                 c.appendChild(b);
             });
@@ -1386,30 +1423,36 @@
         function detectPUA() {
             if(!currentPuaSelection) { showToast("請先選擇標籤"); return; }
             const box = document.getElementById('pua-result'), badge = document.getElementById('pua-level');
-            let item = currentPuaSelection; 
-            
             box.style.opacity = 0;
             setTimeout(() => {
-                document.getElementById('pua-translation').innerText = item.trans;
-                if (item.defenses && item.defenses.length > 0) {
-                    document.getElementById('pua-defense').innerText = item.defenses[Math.floor(Math.random()*item.defenses.length)];
+                document.getElementById('pua-translation').innerText = currentPuaSelection.trans;
+                if (currentPuaSelection.defenses && currentPuaSelection.defenses.length > 0) {
+                    document.getElementById('pua-defense').innerText = currentPuaSelection.defenses[Math.floor(Math.random()*currentPuaSelection.defenses.length)];
                 } else {
                     document.getElementById('pua-defense').innerText = "(保持微笑)";
                 }
-                badge.style.display = item.level ? 'inline-block' : 'none'; badge.innerText = `毒性: ${item.level}`;
+                badge.style.display = currentPuaSelection.level ? 'inline-block' : 'none'; badge.innerText = `毒性: ${currentPuaSelection.level}`;
                 box.style.opacity = 1;
             }, 200);
         }
         function togglePuaTest() { const a = document.getElementById('pua-test-area'); a.style.display = a.style.display === 'block' ? 'none' : 'block'; if(a.style.display==='block') initPuaTest(); }
-        function initPuaTest() { const l = document.getElementById('test-list'); l.innerHTML=''; puaTestItems.sort(()=>0.5-Math.random()).slice(0,7).forEach((t, index)=>{ const d=document.createElement('div'); d.style.marginBottom='10px'; d.style.cursor='pointer'; d.innerHTML=`<input type="checkbox" data-index="${index}"> <span>${t.text}</span>`; d.onclick=(e)=>{if(e.target.tagName!=='INPUT') {const c=d.querySelector('input'); c.checked=!c.checked;}}; l.appendChild(d); }); }
+        function initPuaTest() {
+            const l = document.getElementById('test-list');
+            l.innerHTML='';
+            const source = onlinePuaChecklist.length > 0 ? onlinePuaChecklist : puaTestItems;
+            [...source].sort(()=>0.5-Math.random()).slice(0,7).forEach((t)=>{
+                const d=document.createElement('div');
+                d.style.marginBottom='10px';
+                d.style.cursor='pointer';
+                d.innerHTML=`<input type="checkbox" data-weight="${t.weight}"> <span>${t.text}</span>`;
+                d.onclick=(e)=>{if(e.target.tagName!=='INPUT') {const c=d.querySelector('input'); c.checked=!c.checked;}};
+                l.appendChild(d);
+            });
+        }
         function runPuaTest() {
             const inputs = document.querySelectorAll('#test-list input:checked');
-            let totalWeight = 0;
-            inputs.forEach(input => {
-                const text = input.nextElementSibling.innerText;
-                const item = puaTestItems.find(i => i.text === text);
-                if (item) totalWeight += item.weight;
-            });
+            let totalScore = 0;
+            inputs.forEach(input => { totalScore += parseInt(input.getAttribute('data-weight')) || 0; });
             
             const r = document.getElementById('test-result');
             r.style.display='block';
@@ -1417,16 +1460,16 @@
             let diagnosis = "";
             let prescription = "";
             
-            if (totalWeight === 0) {
+            if (totalScore === 0) {
                 diagnosis = "健康寶寶";
                 prescription = "恭喜你！擁有屬靈抗體，請繼續保持這份清醒。";
-            } else if (totalWeight <= 3) {
+            } else if (totalScore <= 3) {
                 diagnosis = "輕微擦傷";
                 prescription = "多看看鹹魚語錄，增強免疫力。";
-            } else if (totalWeight <= 7) {
+            } else if (totalScore <= 7) {
                 diagnosis = "中度感染";
                 prescription = "建議暫停聚會一週，去海邊走走，聽聽海浪的聲音（那是上帝的白噪音）。";
-            } else if (totalWeight <= 11) {
+            } else if (totalScore <= 11) {
                 diagnosis = "重度中毒";
                 prescription = "你需要特效藥：閱讀加拉太書，並大聲朗讀『為了自由，基督釋放了我們』。";
             } else {
@@ -1434,7 +1477,7 @@
                 prescription = "快逃！這不是教會，是精神時光屋。請尋求專業諮商或正常人類的協助。";
             }
             
-            r.innerHTML = `<strong style="color:var(--accent-purple)">診斷：${diagnosis} (毒性指數: ${totalWeight})</strong><br><br><span style="font-size:0.9rem; color:#666">💊 鹹魚藥方：<br>${prescription}</span>`;
+            r.innerHTML = `<strong style="color:var(--accent-purple)">診斷：${diagnosis} (毒性分數: ${totalScore})</strong><br><br><span style="font-size:0.9rem; color:#666">💊 鹹魚藥方：<br>${prescription}</span>`;
         }
         function renderShieldTags() {
             const c = document.getElementById('shield-tag-container'); if(!c) return; c.innerHTML=''; currentShieldSelection=null; document.getElementById('shield-result').style.opacity=0; document.getElementById('shield-text').innerText='';
@@ -1487,7 +1530,6 @@
             URL.revokeObjectURL(url);
         }
         function exportData() {
-            // Updated Export for new Key
             const data = { 
                 biblePlan_2026: localStorage.getItem('biblePlan_2026'), 
                 prayers: localStorage.getItem('prayers'), 
@@ -1507,10 +1549,7 @@
             reader.onload = function(e) {
                 try {
                     const data = JSON.parse(e.target.result);
-                    // Support both old and new keys for import
                     if (data.biblePlan_2026) saveToStorage('biblePlan_2026', data.biblePlan_2026);
-                    else if (data.biblePlan) saveToStorage('biblePlan_2026', data.biblePlan); // Migration on import
-
                     if (data.prayers) saveToStorage('prayers', data.prayers);
                     if (data.goals) saveToStorage('goals', data.goals);
                     if (data.userSignals) saveToStorage('userSignals', data.userSignals);
@@ -1530,43 +1569,26 @@
         function showHelpModal() { document.getElementById('help-modal').classList.add('show'); }
         function closeHelpModal() { document.getElementById('help-modal').classList.remove('show'); }
 
-        // --- NEW: Update Home Status (Replaces renderBibleGrid) ---
         function updateHomeStatus() {
-            // Get today's date in MM-DD format
             const now = new Date();
             const todayStr = `${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
-            
-            // Find today's plan
             let todayPlan = biblePlan.find(d => d.dateStr === todayStr);
-            
-            // Fallback logic
             if (!todayPlan && biblePlan.length > 0) todayPlan = biblePlan[0];
-
             const scopeText = document.getElementById('plan-scope-text');
             if(scopeText) {
                 if (todayPlan) {
                     const extra = todayPlan.extraMark ? ` ${todayPlan.extraMark}` : '';
                     scopeText.innerText = (todayPlan.reading || "今日暫無進度") + extra;
-                } else {
-                    scopeText.innerText = "今日休息"; // 防呆顯示
-                }
+                } else { scopeText.innerText = "今日休息"; }
             }
-            
-            // Update Date Text
             const dateText = document.getElementById('current-date-text');
-            if(dateText) dateText.innerText = `${now.getMonth() + 1}/${now.getDate()}`; // Display as M/D
-
-            // Update Progress Bar
+            if(dateText) dateText.innerText = `${now.getMonth() + 1}/${now.getDate()}`;
             let completedCount = biblePlan.filter(d => d.completed).length;
             const percent = ((completedCount / 365) * 100).toFixed(1);
-            
             const progressBar = document.getElementById('bible-progress'); 
             if(progressBar) progressBar.style.width = `${percent}%`;
-            
             const percentText = document.getElementById('percent-text');
             if(percentText) percentText.innerText = `${percent}% 入味`;
-
-            // Update Stars
             const saltStars = document.getElementById('today-salt-stars');
             if (saltStars && todayPlan) {
                 const count = todayPlan.details ? todayPlan.details.length : 0;
@@ -1574,7 +1596,6 @@
             }
         }
 
-        // --- Check-in Logic for Journal ---
         function handleCheckIn(dateKey) {
             const planIndex = biblePlan.findIndex(p => p.dateStr === dateKey);
             if (planIndex !== -1) {
@@ -1583,35 +1604,25 @@
                     biblePlan[planIndex].completed = true;
                     saveToStorage('biblePlan_2026', JSON.stringify(biblePlan));
                     showToast('🎉 今日讀經打卡成功！');
-                    updateHomeStatus(); // Refresh Home UI
-                } else {
-                    showToast('已經打過卡囉！');
-                }
+                    updateHomeStatus();
+                } else { showToast('已經打過卡囉！'); }
             }
         }
         
         function fallbackCopyTextToClipboard(text, successMsg) {
             var textArea = document.createElement("textarea");
             textArea.value = text;
-            
-            // Ensure it's not visible but part of the DOM
             textArea.style.position = "fixed";
             textArea.style.left = "-9999px";
             textArea.style.top = "0";
             document.body.appendChild(textArea);
-            
             textArea.focus();
             textArea.select();
-
             try {
                 var successful = document.execCommand('copy');
                 if(successful) showToast(successMsg);
                 else showToast("複製失敗，請手動複製");
-            } catch (err) {
-                console.error('Fallback: Oops, unable to copy', err);
-                showToast("複製失敗");
-            }
-
+            } catch (err) { showToast("複製失敗"); }
             document.body.removeChild(textArea);
         }
 
@@ -1619,74 +1630,42 @@
              if (navigator.clipboard && navigator.clipboard.writeText) {
                  navigator.clipboard.writeText(text)
                      .then(() => showToast(successMsg))
-                     .catch(err => {
-                         console.warn("Clipboard API failed, trying fallback...", err);
-                         fallbackCopyTextToClipboard(text, successMsg);
-                     });
-             } else {
-                 fallbackCopyTextToClipboard(text, successMsg);
-             }
+                     .catch(err => { fallbackCopyTextToClipboard(text, successMsg); });
+             } else { fallbackCopyTextToClipboard(text, successMsg); }
         }
 
         function initData() {
-            // Force Migration to New Key to fix "undefined" issues
-            const DB_KEY = 'biblePlan_2026'; // 定義 DB_KEY
+            const DB_KEY = 'biblePlan_2026';
             const savedBible = localStorage.getItem(DB_KEY);
             let needRegen = !savedBible;
-            
-            // Migration Logic: If old key exists but new key doesn't, try to migrate completion status
             if (needRegen) {
                 const oldData = localStorage.getItem('biblePlan');
                 if (oldData) {
                     try {
                         const oldParsed = JSON.parse(oldData);
-                        // Generate fresh plan first
                         biblePlan = generateBiblePlan();
-                        
-                        // Try to map completion status (Best Effort)
-                        // Old format might be M/D, New is MM-DD. 
-                        // Simple index mapping might be safer if both are 365 days.
                         if (oldParsed.length === biblePlan.length) {
-                            oldParsed.forEach((d, i) => {
-                                if (d.completed) biblePlan[i].completed = true;
-                            });
+                            oldParsed.forEach((d, i) => { if (d.completed) biblePlan[i].completed = true; });
                         }
-                        
                         saveToStorage(DB_KEY, JSON.stringify(biblePlan));
-                        needRegen = false; // Data is ready
-                    } catch(e) { 
-                        // Migration failed, just regen
-                        needRegen = true; 
-                    }
+                        needRegen = false;
+                    } catch(e) { needRegen = true; }
                 }
             }
-
             if (!needRegen) {
                 try {
                     biblePlan = JSON.parse(savedBible);
-                    // Double check integrity
-                    if (!biblePlan || biblePlan.length === 0 || !biblePlan[0].dateStr.includes('-')) {
-                        needRegen = true;
-                    }
-                    // Fix "undefined" in reading text
-                    if (biblePlan[0].reading && biblePlan[0].reading.includes('undefined')) {
-                         needRegen = true;
-                    }
+                    if (!biblePlan || biblePlan.length === 0 || !biblePlan[0].dateStr.includes('-')) { needRegen = true; }
+                    if (biblePlan[0].reading && biblePlan[0].reading.includes('undefined')) { needRegen = true; }
                 } catch(e) { needRegen = true; }
             }
-            
-            if (needRegen) {
-                biblePlan = generateBiblePlan();
-                saveToStorage(DB_KEY, JSON.stringify(biblePlan));
-            }
-
+            if (needRegen) { biblePlan = generateBiblePlan(); saveToStorage(DB_KEY, JSON.stringify(biblePlan)); }
             try { prayers = JSON.parse(localStorage.getItem('prayers')||'[]'); } catch(e){}
             try { goals = JSON.parse(localStorage.getItem('goals')||'[]'); } catch(e){}
             try { userSignals = JSON.parse(localStorage.getItem('userSignals')||'[]'); } catch(e){}
             try { savingsPlan = JSON.parse(localStorage.getItem('savingsPlan')||JSON.stringify(new Array(366).fill(false))); } catch(e){}
             try { wishlist = JSON.parse(localStorage.getItem('wishlist')||'[]'); } catch(e){}
             yearlyKeyword = localStorage.getItem('yearlyKeyword')||'';
-
             refreshDailyWord();
             refreshFinancialEncouragement();
         }
@@ -1694,33 +1673,19 @@
         window.onload = function() {
             generateAppIcons();
             initData();
-            loadOnlineQuotes(); loadPreservativePool(); loadFlipQuotes(); loadShieldData();
-            // loadPuaData removed, use local data
+            loadOnlineQuotes(); loadPreservativePool(); loadFlipQuotes(); loadShieldData(); loadPuaChecklist();
+            loadPuaData(); 
             renderPuaTags(); 
             loadSaltStatusMap().then(()=>setRandomStatus());
-            
-            // Journal UI specific events setup
             const picker = document.getElementById('journal-date-picker');
-            if (picker) {
-                picker.addEventListener('change', (e) => handleJournalDateChange(e.target.value.substring(5)));
-            }
-            
-            // Check-in Button Event
+            if (picker) { picker.addEventListener('change', (e) => handleJournalDateChange(e.target.value.substring(5))); }
             const checkInBtn = document.getElementById('journal-checkin-btn');
-            if (checkInBtn) {
-                checkInBtn.addEventListener('click', () => {
-                    const dateKey = picker.value.substring(5); // MM-DD
-                    handleCheckIn(dateKey);
-                });
-            }
-
+            if (checkInBtn) { checkInBtn.addEventListener('click', () => { const dateKey = picker.value.substring(5); handleCheckIn(dateKey); }); }
             const copyBtn = document.getElementById('copy-btn');
             if(copyBtn) {
                 copyBtn.addEventListener('click', () => {
                     let textToCopy = "";
                     if (selectedVerses.size > 0) {
-                        // Copy selected verses
-                        // We need to sort them to maintain order
                         const verses = document.querySelectorAll('.verse-row.selected-verse');
                         let buffer = "";
                         verses.forEach(v => {
@@ -1729,31 +1694,17 @@
                              buffer += `${l} ${t}\n`;
                         });
                         textToCopy = buffer;
-                    } else {
-                        // Copy all
-                        textToCopy = currentFullText;
-                    }
-                    
+                    } else { textToCopy = currentFullText; }
                     if(textToCopy) {
                         copyText(textToCopy, selectedVerses.size > 0 ? "已複製選取經文" : "已複製整章經文");
-                        
-                        // Clear selection UI and state
                         selectedVerses.clear();
                         document.querySelectorAll('.verse-row.selected-verse').forEach(el => el.classList.remove('selected-verse'));
-                    } else {
-                        showToast("沒有內容可複製");
-                    }
+                    } else { showToast("沒有內容可複製"); }
                 });
             }
-
             ['note-scripture', 'note-reflection', 'note-prayer'].forEach(id => {
                 const el = document.getElementById(id);
-                if(el) {
-                    el.addEventListener('input', () => {
-                        const dateKey = picker.value.substring(5);
-                        saveNote(dateKey, id, el.value);
-                    });
-                }
+                if(el) { el.addEventListener('input', () => { const dateKey = picker.value.substring(5); saveNote(dateKey, id, el.value); }); }
             });
             document.querySelectorAll('.mood-btn').forEach(btn => {
                 btn.addEventListener('click', () => {
@@ -1764,10 +1715,7 @@
                     saveNote(dateKey, 'note-mood', mood);
                 });
             });
-            
-            // Initial call to populate Home stats
             updateHomeStatus();
-            // Initial render of Savings/Wishlist
             renderSavingsGrid();
             renderWishlist();
         };
