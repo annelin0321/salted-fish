@@ -43,7 +43,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     
     <style>
-        /* --- 原本 App 的核心樣式 (保留) --- */
         :root {
             --bg-color: #FDFCF8;
             --card-bg: #FFFFFF;
@@ -68,9 +67,8 @@
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
-        /* Tailwind Preflight Fixes: 恢復被 Tailwind 重置的標題樣式 */
         h1, h2, h3, h4, h5, h6 { font-size: revert; font-weight: revert; }
-        button { background-color: transparent; } /* Reset button for Tailwind but keep defaults */
+        button { background-color: transparent; }
 
         html, body {
             font-family: 'Noto Sans TC', sans-serif;
@@ -100,21 +98,19 @@
         .main-title { font-family: 'Noto Serif TC', serif; font-size: 2rem; font-weight: 700; color: var(--text-primary); letter-spacing: 0.05em; margin-bottom: 6px; }
         .subtitle { font-family: 'Noto Sans TC', sans-serif; font-size: 0.85rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.2em; }
         
-        /* 預設容器寬度限制 - 僅在非靈修模式時使用 */
         main.container-limited { padding: 0 20px; max-width: 500px; margin: 0 auto; width: 100%; display: flex; flex-direction: column; }
-        /* 靈修模式時使用全寬 */
         main.container-full { width: 100%; height: 100%; padding: 0; overflow: hidden; display: flex; flex-direction: column; }
-        /* Mobile Scroll Override for Devotion Mode */
+
         @media (max-width: 1024px) {
             main.container-full {
-                overflow-y: auto; /* Allow scrolling on main container on mobile */
+                overflow-y: auto;
                 height: auto;
                 min-height: 100%;
-                display: block; /* Break flex layout for scrolling */
-                padding-bottom: 120px; /* 增加底部留白，避免被導覽列遮擋 */
+                display: block;
+                padding-bottom: 120px;
             }
             body.devotion-mode #scroll-wrapper {
-                overflow-y: auto; /* 確保外層也能捲動 */
+                overflow-y: auto;
             }
         }
 
@@ -129,11 +125,6 @@
         @keyframes halo-glow { 0% { opacity: 0.6; stroke-width: 2px; } 100% { opacity: 1; stroke-width: 3px; } }
         @keyframes blink { 0%, 48%, 52%, 100% { transform: scaleY(1); } 50% { transform: scaleY(0.1); } }
 
-        /* General UI Elements */
-        h2 { font-family: 'Noto Serif TC', serif; font-size: 1.4rem; color: var(--text-primary); margin-bottom: 15px; }
-        p { color: var(--text-primary); font-weight: 300; }
-        .text-muted { color: var(--text-secondary); font-size: 0.9rem; }
-        
         .btn-primary { background: var(--text-primary); color: white; border: none; padding: 14px 30px; border-radius: 50px; font-size: 1rem; cursor: pointer; font-weight: 500; width: 100%; transition: all 0.2s ease; box-shadow: 0 4px 15px rgba(90, 82, 76, 0.2); }
         .btn-primary:active { transform: scale(0.97); }
         .btn-icon { background: transparent; border: none; cursor: pointer; padding: 8px; color: var(--accent-blue); transition: transform 0.2s; display: inline-flex; align-items: center; justify-content: center; }
@@ -142,8 +133,6 @@
         .preservative-btn { background: white; border: 1px solid var(--accent-green); color: var(--accent-green); padding: 8px 16px; border-radius: 20px; font-size: 0.9rem; cursor: pointer; margin-bottom: 15px; display: inline-flex; align-items: center; gap: 5px; transition: all 0.2s; }
         .preservative-box { font-family: 'Noto Serif TC', serif; font-size: 1rem; color: var(--text-primary); min-height: 40px; margin-bottom: 15px; font-style: italic; opacity: 0; transition: opacity 0.5s; }
 
-        .bible-plan-panel { margin-top: 25px; padding-top: 20px; border-top: 1px dashed var(--border-color); text-align: left; }
-        .panel-desc { font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 15px; font-weight: 400; font-style: italic; line-height: 1.6; }
         .progress-bar-bg { background: #eee; border-radius: 10px; height: 16px; overflow: hidden; width: 100%; margin-bottom: 10px; position: relative; }
         .progress-bar-fill { background: linear-gradient(90deg, var(--accent-blue), #A3C4BC); height: 100%; width: 0%; transition: width 1.5s cubic-bezier(0.22, 1, 0.36, 1); border-radius: 10px; }
         .progress-info { background: #FAFAFA; padding: 15px; border-radius: 15px; border: 1px solid var(--border-color); margin-bottom: 15px; }
@@ -157,26 +146,21 @@
         .check-in-btn.checked { background: var(--accent-green); cursor: default; }
 
         /* --- Devotion Section Specifics (NEW JOURNAL UI) --- */
-        /* 文青風標題與經文專用字體 */
         .serif-font, .bible-text { font-family: 'Noto Serif TC', serif; }
         .bible-text { line-height: 2.2; font-size: 1.15rem; letter-spacing: 0.05em; }
 
-        /* 自定義滾動條 - 極簡細線 */
         .journal-scroll::-webkit-scrollbar { width: 5px; height: 5px; }
         .journal-scroll::-webkit-scrollbar-track { background: transparent; }
         .journal-scroll::-webkit-scrollbar-thumb { background-color: #D6D0C8; border-radius: 10px; }
         .journal-scroll::-webkit-scrollbar-thumb:hover { background-color: #A68C76; }
 
-        /* 載入動畫 */
         .loader { border: 2px solid #F2EBE5; border-top: 2px solid #A68C76; border-radius: 50%; width: 24px; height: 24px; animation: spin 1s linear infinite; display: inline-block; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        /* 心情選擇器樣式 */
         .mood-btn.active { transform: scale(1.25); opacity: 1; filter: grayscale(0%) drop-shadow(0 2px 4px rgba(166, 140, 118, 0.2)); background-color: #fff; border-radius: 50%; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
         .mood-btn { opacity: 0.6; filter: grayscale(80%); transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border-radius: 50%; }
         .mood-btn:hover { opacity: 1; filter: grayscale(0%); transform: scale(1.1); background-color: #fff; }
 
-        /* Other App Sections */
         .flip-container { perspective: 1000px; width: 100%; height: 340px; cursor: pointer; }
         .flipper { position: relative; width: 100%; height: 100%; transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275); transform-style: preserve-3d; }
         .flip-container.flipped .flipper { transform: rotateY(180deg); }
@@ -189,14 +173,12 @@
         .pua-content { font-size: 1rem; color: var(--text-primary); margin-bottom: 15px; line-height: 1.5; }
         .pua-level-badge { font-size: 0.75rem; padding: 4px 10px; border-radius: 12px; background-color: #F3EAF5; color: var(--accent-purple); font-weight: bold; display: none; border: 1px solid rgba(181, 163, 190, 0.3); }
         
-        /* Other specific components */
         .tab-switcher { display: flex; background: #F2F2F2; padding: 5px; border-radius: 50px; margin-bottom: 25px; gap: 2px; }
         .tab-btn { flex: 1; border: none; background: transparent; padding: 10px 5px; border-radius: 40px; color: var(--text-secondary); cursor: pointer; font-size: 0.85rem; transition: all 0.3s; font-weight: 500; white-space: nowrap;}
         .tab-btn.active { background: white; color: var(--text-primary); shadow: 0 2px 5px rgba(0,0,0,0.05); font-weight: bold; }
         .sub-section { display: none; animation: fadeIn 0.3s ease; }
         .sub-section.active { display: block; }
         
-        /* Grid removed from CSS to allow JS dynamic rendering with Tailwind */
         .ai-encourage-box { background: rgba(255,255,255,0.7); border: 1px dashed var(--accent-blue); padding: 15px; border-radius: 15px; margin-top: 20px; font-size: 0.9rem; color: var(--text-primary); text-align: center; font-family: 'Noto Serif TC', serif; font-style: italic; }
         
         .pua-tags-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
@@ -214,13 +196,11 @@
         .btn-line { background-color: transparent; color: var(--accent-purple); border: 1px solid var(--accent-purple); padding: 10px 20px; border-radius: 50px; font-size: 0.9rem; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; transition: all 0.3s ease; font-weight: 500; }
         .btn-line:hover { background-color: var(--accent-purple); color: white; }
 
-        /* Modal */
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.3); backdrop-filter: blur(3px); z-index: 2000; display: none; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.3s; }
         .modal-overlay.show { display: flex; opacity: 1; }
         .modal-content { background: white; width: 85%; max-width: 350px; padding: 30px; border-radius: 30px; text-align: center; transform: scale(0.9); transition: transform 0.3s; box-shadow: 0 20px 60px rgba(0,0,0,0.1); max-height: 85vh; overflow-y: auto; }
         .modal-overlay.show .modal-content { transform: scale(1); }
         
-        /* Help Modal Specifics */
         #help-modal .modal-content { max-width: 600px; text-align: left; }
         #help-modal h2 { font-size: 1.5rem; font-weight: 700; color: var(--text-primary); margin-bottom: 1rem; border-bottom: 2px solid var(--accent-blue); padding-bottom: 0.5rem; font-family: 'Noto Serif TC', serif; }
         #help-modal h3 { font-size: 1.1rem; font-weight: 600; color: var(--accent-blue); margin-top: 1.5rem; margin-bottom: 0.5rem; }
@@ -229,14 +209,23 @@
         #help-modal ul { list-style-type: disc; padding-left: 1.5rem; }
         #help-modal strong { color: #A68C76; }
 
-        /* Bottom Nav Fixes */
+        /* Future Letter Styles */
+        .letter-list-item { 
+            display: flex; justify-content: space-between; align-items: center; 
+            padding: 15px; border: 1px solid #EBE6DE; border-radius: 12px; margin-bottom: 8px; 
+            background: white; transition: all 0.2s; cursor: pointer; 
+        }
+        .letter-list-item.locked { opacity: 0.6; cursor: default; background: #FAFAFA; }
+        .letter-list-item.new { border-color: #D4B483; background: #FFFCF5; }
+        .letter-list-item:hover:not(.locked) { transform: translateY(-2px); shadow: 0 4px 12px rgba(0,0,0,0.05); }
+
         .bottom-nav {
             position: fixed !important;
             bottom: 20px !important;
             bottom: calc(20px + env(safe-area-inset-bottom)) !important;
             left: 50% !important;
             transform: translateX(-50%) !important;
-            background: #ffffff !important; /* Fallback */
+            background: #ffffff !important; 
             background: rgba(255, 255, 255, 0.95) !important;
             backdrop-filter: blur(10px);
             border: 1px solid #e5e7eb !important;
@@ -245,7 +234,7 @@
             display: flex !important;
             gap: 2px !important;
             box-shadow: 0 10px 30px rgba(0,0,0,0.15) !important;
-            z-index: 999999 !important; /* Higher z-index */
+            z-index: 999999 !important;
             width: 95% !important;
             max-width: 460px !important;
             justify-content: space-between !important;
@@ -269,30 +258,28 @@
         .bottom-nav::-webkit-scrollbar { display: none; }
         
         .section { display: none; animation: fadeIn 0.4s ease forwards; flex: 1; }
-        .section.active { display: flex; flex-direction: column; } /* Adjusted for flex layouts */
+        .section.active { display: flex; flex-direction: column; } 
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         
         .toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-100px); background: rgba(90, 82, 76, 0.9); color: white; padding: 10px 20px; border-radius: 50px; font-size: 0.9rem; z-index: 2005; transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); box-shadow: 0 5px 15px rgba(0,0,0,0.1); display: flex; align-items: center; gap: 8px; }
         .toast.show { transform: translateX(-50%) translateY(0); }
         .global-footer-quote { text-align: center; font-size: 0.85rem; color: #D1D1D1; padding: 20px 20px 40px; line-height: 2; letter-spacing: 0.05em; font-style: italic; width: 100%; pointer-events: none; }
         
-        /* 隱藏 App Shell 標頭，當處於靈修模式時 (因為有自己的 Header) */
         body.devotion-mode > #scroll-wrapper > header { display: none !important; }
         body.devotion-mode .global-footer-quote { display: none; }
-        /* 靈修模式下 Main 需要全寬 */
         body.devotion-mode #app-main { padding: 0; max-width: 100%; height: 100%; overflow: hidden; }
-        body.devotion-mode #scroll-wrapper { overflow: hidden; } /* 禁止外層捲動，改用內部捲動 */
+        body.devotion-mode #scroll-wrapper { overflow: hidden; }
         
-        /* 輸入框 placeholder 顏色修正 */
         input::placeholder, textarea::placeholder { color: #D6D0C8; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-        /* quote-comment override to avoid border */
         #quote-comment { font-size: 0.85rem; color: var(--accent-blue); font-style: italic; width: 85%; } 
 
-        /* Selected Verse Style */
         .selected-verse { background-color: #F3EAF5 !important; border-left: 3px solid #B5A3BE; }
+        
+        .emotion-tag { padding: 4px 10px; border-radius: 12px; background: #F2EBE5; color: #5E5A54; font-size: 0.8rem; cursor: pointer; border: 1px solid transparent; transition: all 0.2s; }
+        .emotion-tag:hover { border-color: #A68C76; }
     </style>
 </head>
 <body>
@@ -302,7 +289,6 @@
         <header>
             <h1 class="main-title">機智的鹹魚生活</h1>
             <div class="subtitle">Wise Salted Fish Life</div>
-            <!-- Move Banner Here -->
             <div onclick="showHelpModal()" class="mt-4 inline-block px-4 py-2 bg-[#F9F7F5] border border-[#EBE6DE] rounded-lg cursor-pointer hover:bg-[#F2EBE5] transition-colors shadow-sm group">
                 <p class="text-xs text-[#94908A] group-hover:text-[#A68C76] tracking-widest flex items-center justify-center gap-1 transition-colors">
                     <span class="animate-pulse">⚠️</span> 投資天國穩賺不賠，醃漬前請詳閱 <span class="underline decoration-dotted underline-offset-4 font-bold ml-1">公開說明書 🔗</span>
@@ -314,7 +300,6 @@
             <!-- 首頁 -->
             <section id="home" class="section active">
                 <div class="card">
-                    
                     <div style="position: absolute; top: 20px; right: 20px; background: var(--accent-blue); color: white; padding: 4px 12px; border-radius: 20px; font-size: 0.75rem;">鹹魚鹽度監測中</div>
                     <div class="mascot-container">
                         <svg class="mascot-svg" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
@@ -332,35 +317,10 @@
                     </div>
                     <h2 id="daily-status-title">鹹魚鹽度探測中...</h2>
                     <p id="daily-status-desc" class="text-muted" style="margin-bottom: 15px;">請保持呼吸，正在計算你與天國的距離...</p>
-                    
-                    <!-- NEW: Manifesto Box (Option 1) -->
-                    <div class="bg-[#F9F7F5] rounded-xl p-4 mb-5 border border-[#EBE6DE] text-left">
-                        <p class="font-bold text-[#A68C76] text-xs tracking-widest mb-2 border-b border-[#EBE6DE] pb-1">【鹹魚生存守則：三不一要】</p>
-                        <ul class="text-xs text-[#5E5A54] space-y-1.5 leading-relaxed">
-                            <li class="flex items-start gap-1.5">
-                                <span class="shrink-0">🙅</span>
-                                <span><strong>不內耗</strong>：拒絕自我控告，你已經很好了。</span>
-                            </li>
-                            <li class="flex items-start gap-1.5">
-                                <span class="shrink-0">🙅</span>
-                                <span><strong>不硬撐</strong>：十字架耶穌揹過了，你不用再揹。</span>
-                            </li>
-                            <li class="flex items-start gap-1.5">
-                                <span class="shrink-0">🙅</span>
-                                <span><strong>不盲從</strong>：拒絕屬靈 PUA，只聽牧羊人的聲音。</span>
-                            </li>
-                            <li class="flex items-start gap-1.5">
-                                <span class="shrink-0">🙆</span>
-                                <span><strong>要安息</strong>：在恩典的洋海裡，快樂地隨波逐流。</span>
-                            </li>
-                        </ul>
-                    </div>
-
                     <div style="margin-bottom: 20px;">
                         <button class="preservative-btn" onclick="getPreservative()">⚠️ 領取屬靈防腐劑 (急救用)</button>
                         <div id="preservative-display" class="preservative-box"></div>
                     </div>
-                    
                     <div class="bible-plan-panel">
                         <h3 style="font-family:'Noto Serif TC'; font-size:1.1rem; margin-bottom:5px;">鹹魚醃漬中</h3>
                         <p class="panel-desc">「立志做一條用聖經醃漬的鹹魚！每天撒點鹽（讀經），生活會更香喔。」</p>
@@ -372,7 +332,6 @@
                             </div>
                             <div class="progress-row" style="justify-content: flex-start;">📖 本日進度：<span id="plan-scope-text" style="font-weight: bold; margin-left: 5px;">--</span></div>
                             <div class="progress-row" style="justify-content: flex-start;">🧂 本日加鹽量：<span id="today-salt-stars" style="margin-left: 5px; color: var(--accent-gold); letter-spacing: 2px;"></span></div>
-                            
                             <div class="progress-quote" id="daily-word" onclick="refreshDailyWord()" title="點擊重刷小語">
                                 <span>💬 本日醃漬小語...</span>
                                 <span class="refresh-icon">↻</span>
@@ -380,8 +339,6 @@
                         </div>
                         <button class="check-in-btn" onclick="showSection('devotion', document.querySelector('#nav-devotion'))">前往醃漬打卡 ➜</button>
                     </div>
-
-                    <!-- 資料保險箱 (恢復顯示) -->
                     <div class="mt-6 pt-4 border-t border-dashed border-[#EBE6DE] text-center">
                         <p class="text-xs text-[#94908A] mb-2">資料保險箱</p>
                         <div class="flex justify-center gap-2">
@@ -393,18 +350,14 @@
                 </div>
             </section>
 
-            <!-- 靈修 (Devotion) - NEW JOURNAL UI -->
+            <!-- 靈修 (Devotion) -->
             <section id="devotion" class="section h-full w-full bg-[#FDFCF8]">
-                <!-- 內嵌的靈修內室 UI -->
                 <div class="h-full flex flex-col w-full">
-                    <!-- 頂部導覽列 (Journal Style) -->
                     <header class="bg-white/80 backdrop-blur-md border-b border-[#EBE6DE] sticky top-0 z-20 shrink-0 w-full" style="display:block!important; padding: 0;">
                         <div class="max-w-7xl mx-auto px-4 md:px-6 flex justify-between items-center h-16 gap-3 md:gap-6">
-                            <!-- Logo & Date -->
                             <div class="flex items-center gap-3 shrink-0">
                                 <div class="flex items-center gap-2">
                                     <span class="text-2xl opacity-80">🐟</span>
-                                    <!-- 修復：強制顯示標題，移除 hidden class -->
                                     <h1 class="block text-lg font-bold tracking-widest text-[#5E5A54] m-0">醃漬鹹魚</h1>
                                 </div>
                                 <div class="flex items-center bg-[#F9F7F5] rounded-full px-3 py-1.5 border border-[#EBE6DE] hover:border-[#D6D0C8] transition-colors">
@@ -412,8 +365,6 @@
                                     <button id="journal-checkin-btn" class="ml-2 text-xs text-gray-400 hover:text-m-green" title="打卡完成">✔️</button>
                                 </div>
                             </div>
-
-                            <!-- 儲存狀態 -->
                             <div class="flex items-center shrink-0 w-16 justify-end hidden md:flex">
                                 <div id="save-status" class="text-xs font-medium text-[#8DA399] opacity-0 transition-opacity duration-500 flex items-center gap-1 bg-[#8DA399]/10 px-3 py-1 rounded-full tracking-wider">
                                     <span>SAVED</span>
@@ -422,25 +373,22 @@
                         </div>
                     </header>
 
-                    <!-- 主要內容區 -->
                     <div class="flex-1 w-full max-w-7xl mx-auto p-4 md:p-8 grid grid-cols-1 lg:grid-cols-12 gap-8 overflow-y-auto lg:overflow-hidden relative">
-                        
-                        <!-- 左欄：讀經進度 (Desktop) -->
                         <aside class="hidden lg:flex lg:col-span-2 flex-col gap-4 overflow-hidden h-full">
                             <div class="h-full flex flex-col">
                                 <h3 class="text-xs font-semibold text-[#94908A] uppercase tracking-[0.2em] mb-4 pl-1 shrink-0">Reading Plan</h3>
-                                <div class="flex-1 overflow-y-auto pr-2 pl-1 pb-4 space-y-4 journal-scroll" id="plan-list">
-                                    <!-- JS 生成 -->
-                                </div>
+                                <div class="flex-1 overflow-y-auto pr-2 pl-1 pb-4 space-y-4 journal-scroll" id="plan-list"></div>
                             </div>
                         </aside>
 
-                        <!-- 手機版進度選單 -->
-                        <div class="lg:hidden col-span-1 bg-[#FDFCF8] p-4 rounded-xl border border-[#EBE6DE] shadow-sm overflow-x-auto whitespace-nowrap flex gap-2 no-scrollbar items-center shrink-0 min-h-[100px]" id="mobile-plan-list">
-                            <!-- JS 生成 -->
+                        <!-- 手機版進度選單 (改為兩行) -->
+                        <div class="lg:hidden col-span-1 bg-[#FDFCF8] p-4 rounded-xl border border-[#EBE6DE] shadow-sm shrink-0 flex flex-col gap-2">
+                            <!-- 行 1: 讀經進度 -->
+                            <div id="mobile-plan-row-1" class="flex gap-2 overflow-x-auto no-scrollbar items-center pb-1"></div>
+                            <!-- 行 2: 各類日記 -->
+                            <div id="mobile-plan-row-2" class="flex gap-2 overflow-x-auto no-scrollbar items-center pt-1 border-t border-dashed border-[#EBE6DE]"></div>
                         </div>
 
-                        <!-- 整合區：閱讀/筆記區塊 -->
                         <section class="lg:col-span-10 flex flex-col bg-white rounded-2xl shadow-[0_4px_20px_-10px_rgba(0,0,0,0.05)] border border-[#EBE6DE] overflow-hidden min-h-[500px] lg:h-full relative group">
                             <div class="h-1 w-full bg-[#F2EBE5] shrink-0"></div>
                             
@@ -469,28 +417,14 @@
                                 </div>
                             </div>
 
-                            <!-- NOTE VIEW (Hidden by default) -->
+                            <!-- NOTE VIEW -->
                             <div id="view-note" class="flex flex-col h-full hidden">
                                 <div class="px-8 py-5 border-b border-[#F5F2EA] flex flex-col gap-4 shrink-0">
                                     <div class="flex items-center justify-between">
                                         <h3 class="font-serif text-lg text-[#5E5A54] flex items-center gap-3 m-0">
                                             <span class="text-lg opacity-60">✍🏻</span> 醃漬筆記
                                         </h3>
-                                        <div class="flex items-center gap-3">
-                                            <button onclick="shareNote()" class="text-xs text-[#A68C76] hover:text-[#5E5A54] transition-colors font-medium tracking-widest px-2 py-1 hover:bg-[#F9F7F5] rounded">分享</button>
-                                            <button onclick="downloadNote()" class="text-xs text-[#A68C76] hover:text-[#5E5A54] transition-colors font-medium tracking-widest px-2 py-1 hover:bg-[#F9F7F5] rounded">下載</button>
-                                        </div>
-                                    </div>
-                                    <div class="mood-selector-container rounded-xl p-2.5 flex items-center justify-between gap-2">
-                                        <span class="text-[10px] font-bold text-[#A68C76] uppercase tracking-widest pl-2">MOOD</span>
-                                        <div class="flex items-center gap-2 md:gap-3" id="mood-selector">
-                                            <button class="mood-btn text-lg" data-mood="☀️" title="充滿盼望">☀️</button>
-                                            <button class="mood-btn text-lg" data-mood="☁️" title="平靜安穩">☁️</button>
-                                            <button class="mood-btn text-lg" data-mood="🌧️" title="低谷/憂傷">🌧️</button>
-                                            <button class="mood-btn text-lg" data-mood="🔥" title="火熱/渴慕">🔥</button>
-                                            <button class="mood-btn text-lg" data-mood="🌱" title="更新/成長">🌱</button>
-                                        </div>
-                                        <input type="hidden" id="note-mood">
+                                        <button onclick="downloadNote()" class="text-xs text-[#A68C76] hover:text-[#5E5A54] transition-colors font-medium tracking-widest px-2 py-1 hover:bg-[#F9F7F5] rounded">下載日記</button>
                                     </div>
                                 </div>
                                 <div class="flex-1 overflow-y-auto p-8 space-y-8 bg-white selection:bg-[#F2EBE5] journal-scroll">
@@ -506,17 +440,121 @@
                                         <label class="block text-xs font-bold text-[#8DA399] uppercase mb-2 tracking-widest">Prayer / 禱告</label>
                                         <textarea id="note-prayer" placeholder="與大老闆的私密對話時間..." class="w-full bg-transparent border-none p-0 focus:ring-0 outline-none text-[#5E5A54] min-h-[100px] resize-none placeholder-[#D6D0C8] leading-relaxed font-light"></textarea>
                                     </div>
+                                </div>
+                            </div>
 
-                                    <!-- 新增：分隔線與匯出區塊 -->
-                                    <div class="h-px w-full bg-[#F2EBE5] my-6"></div>
-                                    <div class="text-center pb-8">
-                                        <p class="text-xs text-[#94908A] font-serif mb-4 italic tracking-wider">這份感動值得被永久珍藏...</p>
-                                        <button onclick="downloadNote()" class="bg-[#F2EBE5] text-[#5E5A54] hover:bg-[#EBE6DE] px-6 py-2 rounded-full text-sm font-medium tracking-widest transition-all shadow-sm hover:shadow-md">
-                                            匯出日記
-                                        </button>
+                            <!-- GRATITUDE VIEW -->
+                            <div id="view-gratitude" class="flex flex-col h-full hidden">
+                                <div class="px-8 py-5 border-b border-[#F5F2EA] shrink-0 flex justify-between items-center">
+                                    <h3 class="font-serif text-lg text-[#5E5A54]">🙏 感恩日記</h3>
+                                    <span class="text-xs text-[#94908A] tracking-wider">數算恩典</span>
+                                </div>
+                                <div class="flex-1 relative bg-white overflow-hidden">
+                                    <!-- 格線背景效果 -->
+                                    <div class="absolute inset-0 pointer-events-none" 
+                                         style="background-image: linear-gradient(transparent 95%, #EBE6DE 95%); background-size: 100% 2.5rem; background-position: 0 1.5rem;">
+                                    </div>
+                                    <!-- 自由書寫區 -->
+                                    <textarea id="gratitude-text" 
+                                              class="w-full h-full p-8 bg-transparent border-none focus:ring-0 outline-none text-[#5E5A54] text-lg leading-[2.5rem] font-serif resize-none placeholder-[#D6D0C8] journal-scroll"
+                                              placeholder="今天發生了什麼美好的事？
+・感謝神...
+・感謝神..."></textarea>
+                                </div>
+                            </div>
+
+                            <!-- EMOTION VIEW -->
+                            <div id="view-emotion" class="flex flex-col h-full hidden">
+                                <div class="px-8 py-5 border-b border-[#F5F2EA] shrink-0 flex justify-between items-center">
+                                    <h3 class="font-serif text-lg text-[#5E5A54]">🌧️ 情緒日記</h3>
+                                    <span class="text-xs text-[#94908A] tracking-wider">覺察與轉化</span>
+                                </div>
+                                <div class="flex-1 overflow-y-auto p-6 bg-white journal-scroll">
+                                    
+                                    <!-- 情緒選擇器 (Emotion Chart) -->
+                                    <div class="mb-6 space-y-4">
+                                        <div class="space-y-2">
+                                            <span class="text-[10px] text-m-green font-bold tracking-widest uppercase">☀️ 正向 / 能量</span>
+                                            <div class="flex flex-wrap gap-2" id="emotion-tags-pos"></div>
+                                        </div>
+                                        <div class="space-y-2">
+                                            <span class="text-[10px] text-[#9E9791] font-bold tracking-widest uppercase">☁️ 中性 / 狀態</span>
+                                            <div class="flex flex-wrap gap-2" id="emotion-tags-neu"></div>
+                                        </div>
+                                        <div class="space-y-2">
+                                            <span class="text-[10px] text-m-rose font-bold tracking-widest uppercase">🌧️ 負向 / 重擔</span>
+                                            <div class="flex flex-wrap gap-2" id="emotion-tags-neg"></div>
+                                        </div>
+                                    </div>
+
+                                    <hr class="border-dashed border-[#EBE6DE] my-6">
+
+                                    <!-- 結構化輸入欄位 -->
+                                    <div class="space-y-6">
+                                        <div class="group">
+                                            <label class="block text-xs font-bold text-[#A68C76] mb-1">1. 事件 (Fact)</label>
+                                            <input type="text" id="emotion-event" placeholder="發生了什麼事？(客觀事實)" class="w-full bg-[#FAFAFA] border border-[#EBE6DE] rounded-lg px-3 py-2 text-sm focus:border-[#A68C76] outline-none text-[#5E5A54]">
+                                        </div>
+
+                                        <div class="group">
+                                            <label class="block text-xs font-bold text-[#A68C76] mb-1">2. 情緒 (Feeling)</label>
+                                            <input type="text" id="emotion-feeling" placeholder="點選上方標籤或輸入..." class="w-full bg-[#FAFAFA] border border-[#EBE6DE] rounded-lg px-3 py-2 text-sm focus:border-[#A68C76] outline-none text-[#5E5A54]">
+                                        </div>
+
+                                        <div class="group">
+                                            <label class="block text-xs font-bold text-[#D98E73] mb-1">3. 相信了什麼 (Belief)</label>
+                                            <textarea id="emotion-belief" placeholder="我心中的解讀或謊言是... (例如：我覺得被遺棄了、我不重要)" class="w-full bg-[#FFF5F2] border border-[#F2EBE5] rounded-lg px-3 py-2 text-sm focus:border-[#D98E73] outline-none text-[#5E5A54] min-h-[60px] resize-none"></textarea>
+                                        </div>
+
+                                        <div class="group">
+                                            <label class="block text-xs font-bold text-[#7CA1B3] mb-1">4. 神如何看 (Truth)</label>
+                                            <textarea id="emotion-god-view" placeholder="神的話語/真理是怎麼說的？(例如：神看我為寶貴)" class="w-full bg-[#F0F7FA] border border-[#E8F1F5] rounded-lg px-3 py-2 text-sm focus:border-[#7CA1B3] outline-none text-[#5E5A54] min-h-[60px] resize-none"></textarea>
+                                        </div>
+
+                                        <div class="group">
+                                            <label class="block text-xs font-bold text-[#8DA399] mb-1">5. 禱告 (Prayer)</label>
+                                            <textarea id="emotion-prayer" placeholder="基於真理，向神回應..." class="w-full bg-[#F2F7F5] border border-[#EBF2F0] rounded-lg px-3 py-2 text-sm focus:border-[#8DA399] outline-none text-[#5E5A54] min-h-[60px] resize-none"></textarea>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
+
+                            <!-- FUTURE (TIME CAPSULE) VIEW - NEW -->
+                            <div id="view-future" class="flex flex-col h-full hidden">
+                                <div class="px-8 py-5 border-b border-[#F5F2EA] shrink-0 flex justify-between items-center">
+                                    <h3 class="font-serif text-lg text-[#5E5A54]">📮 寫給未來</h3>
+                                    <span class="text-xs text-[#94908A] tracking-wider">時光膠囊</span>
+                                </div>
+                                <div class="flex-1 overflow-y-auto p-6 bg-white flex flex-col gap-6 journal-scroll">
+                                    
+                                    <!-- Write Area -->
+                                    <div class="bg-[#FDFBF7] p-6 rounded-2xl border border-[#EBE6DE] shadow-sm">
+                                        <h4 class="text-sm font-bold text-[#A68C76] mb-4 flex items-center gap-2">
+                                            <span>✍🏻</span> 寫信給未來的自己
+                                        </h4>
+                                        <div class="flex items-center gap-2 mb-4">
+                                            <label class="text-xs text-[#9E9791]">寄送日期：</label>
+                                            <input type="date" id="future-date" class="bg-white border border-[#D6D0C8] rounded-lg px-2 py-1 text-xs text-[#5E5A54] focus:border-[#A68C76] outline-none">
+                                        </div>
+                                        <textarea id="future-content" placeholder="親愛的未來鹹魚..." class="w-full h-32 bg-white border border-[#EBE6DE] rounded-xl p-3 text-sm focus:border-[#A68C76] outline-none resize-none mb-4 placeholder-[#D6D0C8]"></textarea>
+                                        <button onclick="saveFutureLetter()" class="w-full py-2 bg-[#A68C76] text-white rounded-full text-xs font-bold hover:bg-[#8e7662] transition-colors shadow-sm">
+                                            封存寄出 📤
+                                        </button>
+                                    </div>
+
+                                    <!-- Mailbox Area -->
+                                    <div>
+                                        <h4 class="text-sm font-bold text-[#5E5A54] mb-3 flex items-center gap-2 pl-1">
+                                            <span>📬</span> 信箱
+                                        </h4>
+                                        <div id="future-list" class="space-y-2">
+                                            <!-- JS generated letters -->
+                                            <div class="text-center py-8 text-xs text-[#D6D0C8] italic">信箱是空的...</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
                         </section>
                     </div>
                 </div>
@@ -535,10 +573,9 @@
                             </div>
                             <div class="back">
                                 <p class="quote-content" id="quote-content">正在後台熬製亮光...</p>
-                                <p id="quote-source" class="text-muted" style="font-weight:500;">--</p>
+                                <p class="quote-source" id="quote-source" class="text-muted" style="font-weight:500;">--</p>
                                 <div style="width: 40%; height: 1px; border-top: 1px dashed #D6D0C8; margin: 30px auto;"></div>
                                 <p id="quote-comment"> </p>
-                                <!-- 修改按鈕 -->
                                 <button class="btn-icon" onclick="saveCardImage(event)" style="margin-top:25px; font-weight:bold;">📸 拍立得打包 (存圖)</button>
                             </div>
                         </div>
@@ -546,7 +583,7 @@
                 </div>
             </section>
 
-            <!-- 聰明鹹魚 (原 游刃有魚) -->
+            <!-- 聰明鹹魚 -->
             <section id="pua" class="section">
                 <div class="card">
                     <h2>聰明鹹魚</h2>
@@ -554,18 +591,12 @@
                         <p><strong>拒絕被裝進宗教罐頭！</strong></p>
                         <p>讓你識破套路，找回自由。</p>
                     </div>
-                    
                     <div class="pua-tags-header">
                         <label class="label" style="margin-bottom: 0;">你剛才聽到了哪句「金句」？</label>
                         <button class="refresh-pua-btn" onclick="renderPuaTags()">🔄 換一批</button>
                     </div>
-                    
-                    <div id="pua-tag-container" class="pua-tag-container">
-                        <!-- JS 將自動填入標籤 -->
-                    </div>
-
+                    <div id="pua-tag-container" class="pua-tag-container"></div>
                     <button class="btn-primary" onclick="detectPUA()" style="background-color: var(--accent-purple);">啟動翻譯蒟蒻</button>
-                    
                     <div class="pua-result-box" id="pua-result">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
                             <span class="pua-label">人話翻譯機</span>
@@ -575,13 +606,10 @@
                         <span class="pua-label">鹹魚反擊 (內心 OS)：</span>
                         <p class="pua-content" id="pua-defense">--</p>
                     </div>
-
                     <p style="font-size: 0.75rem; color: #D98E73; margin-top: 15px; margin-bottom: 25px; font-style: italic; line-height: 1.5;">
                         ⚠️ 警語：本翻譯由 AI 生成僅供娛樂，不代表每個人這樣說的意思都是這樣。請謹慎分辨，不要對號入座，也不要以此論斷別人。
                     </p>
-
                     <button class="btn-secondary" onclick="togglePuaTest()" style="margin-top:25px; border-radius:50px; background:#F8F8F8; padding:12px; border:none; width:100%; cursor:pointer; font-weight:500;">🧬 屬靈 PUA 病毒快篩</button>
-                    
                     <div id="pua-test-area" class="pua-test-area" style="display:none; background:white; border:1px solid var(--border-color); border-radius:var(--radius-main); padding:20px; margin-top:20px; text-align:left;">
                         <div style="display:flex; justify-content:space-between; margin-bottom:15px; border-bottom: 1px solid #eee; padding-bottom: 10px;">
                             <span style="font-weight:bold; color: var(--accent-purple);">環境 PUA 毒性檢測 (7題)</span>
@@ -591,8 +619,6 @@
                         <button class="btn-primary" onclick="runPuaTest()" style="margin-top:15px; background-color: var(--accent-purple);">生成診斷報告</button>
                         <div id="test-result" class="test-result" style="display:none; margin-top:15px;"></div>
                     </div>
-
-                    <!-- 新增：PUA 回饋區塊 -->
                     <div class="feedback-section">
                         <p class="feedback-text">還有聽過更扯的？歡迎回饋給主廚！</p>
                         <a href="https://line.me/R/ti/p/@469cjlho" target="_blank" rel="noopener noreferrer" class="btn-line">💬 加 LINE 投稿 PUA 金句</a>
@@ -600,27 +626,20 @@
                 </div>
             </section>
 
-            <!-- 修改：將游刃有魚 (Shield) 移到 綽綽有魚 (Flow) 之前 -->
+            <!-- 游刃有魚 -->
             <section id="shield" class="section">
                 <div class="card">
                     <h2>游刃有魚</h2>
                     <div class="text-muted" style="margin-bottom: 40px;">
                         <p>面對讓人翻白眼的提問，這裡有讓你優雅脫身的鹹魚智慧。</p>
                     </div>
-                    
                     <div class="pua-tags-header">
                         <label class="label" style="margin-bottom: 0;">當對方問你這些尷尬問題時：</label>
                         <button class="refresh-shield-btn" onclick="renderShieldTags()">🔄 換一批</button>
                     </div>
-
-                    <div id="shield-tag-container" class="shield-tag-container">
-                          <!-- JS 自動填入標籤 -->
-                    </div>
-
+                    <div id="shield-tag-container" class="shield-tag-container"></div>
                     <button class="btn-primary" onclick="getExcuse()">生成神回覆</button>
                     <div class="result-box" id="shield-result"><p id="shield-text" style="font-family: 'Noto Serif TC';"></p></div>
-
-                    <!-- 新增：Shield 回饋區塊 -->
                     <div class="feedback-section" style="margin-top: 30px;">
                         <p class="feedback-text">遇過更讓人翻白眼的問題？</p>
                         <a href="https://line.me/R/ti/p/@469cjlho" target="_blank" rel="noopener noreferrer" class="btn-line" style="color: var(--accent-warning); border-color: var(--accent-warning);">💬 加 LINE 投稿尷尬問題</a>
@@ -634,36 +653,22 @@
                     <div class="text-muted" style="margin-bottom: 20px;">
                         <p>即使在躺平的時刻，恩典依然綽綽有餘。</p>
                     </div>
-                    
                     <div class="tab-switcher">
                         <button class="tab-btn active" onclick="switchFlowTab('savings')">💰 365 存錢</button>
                         <button class="tab-btn" onclick="switchFlowTab('wishlist')">✨ 願望清單</button>
                     </div>
-
-                    <!-- 365 存錢分頁 -->
                     <div id="tab-savings" class="sub-section active">
-                        <div style="text-align: left; margin-bottom: 15px; font-size: 0.9rem; color: var(--text-secondary); display: flex; justify-content: space-between; align-items: center;" id="savings-total">
-                            <!-- JS 生成 -->
-                        </div>
-                        
+                        <div style="text-align: left; margin-bottom: 15px; font-size: 0.9rem; color: var(--text-secondary); display: flex; justify-content: space-between; align-items: center;" id="savings-total"></div>
                         <button class="btn-primary" onclick="randomSave()" style="background: var(--savings-saved-bg); margin-bottom: 20px;">🎲 隨機存一筆 (交給命運)</button>
-
-                        <div class="savings-grid" id="savings-grid" style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px;">
-                            <!-- JS 生成 -->
-                        </div>
+                        <div class="savings-grid" id="savings-grid" style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px;"></div>
                     </div>
-
-                    <!-- 願望清單分頁 -->
                     <div id="tab-wishlist" class="sub-section">
                         <div class="input-group">
                             <input type="text" id="new-wish-input" placeholder="你的願望..." style="flex: 2;">
                             <input type="number" id="new-wish-cost" placeholder="$ 金額" style="flex: 1;">
                             <button class="add-btn" onclick="addWish()">＋</button>
                         </div>
-                        
                         <div id="wish-list" class="space-y-3"></div>
-
-                        <!-- AI 鼓勵區 -->
                         <div class="ai-encourage-box mt-6">
                             <div class="flex items-center justify-center gap-2 mb-2 opacity-50">
                                 <span class="text-lg">🤖</span>
@@ -676,14 +681,12 @@
                 </div>
             </section>
 
-            <!-- 全域背景語錄區 -->
             <div class="global-footer-quote">
                 <p>「你們是世上的鹽，鹽若失了味……」</p>
                 <p>那就暫時做一條快樂的鹹魚。</p>
             </div>
 
             <footer>
-                <!-- 聯絡我們 (整合所有社群連結) -->
                 <div class="contact-section">
                     <span class="contact-label" style="margin-bottom: 12px; font-size: 0.85rem;">聯絡我們</span>
                     <div class="social-links" style="gap: 25px;">
@@ -703,11 +706,8 @@
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
                         </a>
                     </div>
-                    
-                    <!-- 使用手冊連結 -->
                     <a href="#" onclick="showHelpModal(); return false;" style="margin-top: 12px; font-size: 0.8rem; color: var(--accent-blue); text-decoration: none; border-bottom: 1px dotted var(--accent-blue);">📖 使用說明書</a>
                 </div>
-
                 <div style="margin-top: 25px;">
                     <p class="ai-note">💡 本站所有文案皆由 AI 與鹹魚協同醃漬而成，僅供娛樂。</p>
                     <p style="font-size: 0.65rem; color: #CCC;">Ver 7.0 (Weighted PUA Quiz)</p>
@@ -757,6 +757,19 @@
         </div>
     </div>
 
+    <!-- Letter Popup Modal -->
+    <div id="letter-modal" class="modal-overlay">
+        <div class="modal-content" style="max-width: 500px; background: #FFFCF5; border: 2px solid #D4B483;">
+            <div class="text-center mb-6">
+                <span class="text-4xl">💌</span>
+                <h3 class="text-xl font-serif font-bold text-[#A68C76] mt-2">來自過去的一封信</h3>
+                <p class="text-xs text-[#9E9791] mt-1" id="letter-date-display">寄件日期：YYYY-MM-DD</p>
+            </div>
+            <div id="letter-content-display" class="text-[#5E5A54] leading-relaxed font-serif text-justify mb-8 whitespace-pre-wrap"></div>
+            <button onclick="closeLetterModal()" class="w-full py-2 bg-[#A68C76] text-white rounded-full text-sm font-bold">收藏回憶</button>
+        </div>
+    </div>
+
     <!-- Help Modal -->
     <div id="help-modal" class="modal-overlay">
         <div class="modal-content relative">
@@ -766,22 +779,14 @@
             
             <div class="prose prose-sm max-w-none text-[#5E5A54]">
                 <h2>📖 機智的鹹魚生活 | 使用說明書</h2>
-
                 <p>親愛的鹹魚夥伴，平安：</p>
                 <p>歡迎來到這個專為「不想過度努力而內耗」的基督徒打造的屬靈避難所。在這裡，我們拒絕屬靈焦慮，主張在恩典中快樂躺平。為了讓您能安心地在這裡醃漬自己，請花一點時間閱讀這份說明書。</p>
-
                 <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 my-4 rounded-r">
                     <h4 class="text-yellow-800 font-bold m-0">💾 重要：關於資料保存與備份（必讀！）</h4>
                     <p class="text-sm text-yellow-700 mt-2">這是本站最重要的部分。為了保護您的隱私，本站採用 <strong>「本地儲存 (Local Storage)」</strong> 技術。</p>
                 </div>
-
                 <h3>1. 資料存在哪裡？</h3>
                 <p>您寫下的每一個字（靈修筆記、存錢紀錄、願望清單），都直接儲存在您 <strong>目前使用的這台裝置（手機或電腦）的瀏覽器內部</strong>，我們不會（也無法）將資料上傳到任何雲端伺服器。</p>
-                <ul class="list-disc pl-5 space-y-1">
-                    <li>✅ <strong>優點</strong>：隱私性極高，只有天知、地知、你知，且離線也能使用。</li>
-                    <li>⚠️ <strong>特性</strong>：資料是「跟著瀏覽器」走的。</li>
-                </ul>
-
                 <h3>2. 什麼情況下資料會不見？</h3>
                 <p>由於資料存放在瀏覽器內，以下情況會導致您的紀錄消失：</p>
                 <ul class="list-disc pl-5 space-y-1">
@@ -790,51 +795,20 @@
                     <li><strong>更換裝置或瀏覽器</strong>：手機 Chrome 的資料，無法在電腦 Chrome 或手機 Safari 上看到。</li>
                     <li><strong>手機重置</strong>：恢復原廠設定後，資料會消失。</li>
                 </ul>
-
                 <h3>3. 如何永久保存？（強烈建議）</h3>
                 <p>我們提供了兩種層級的保存方式，建議您養成好習慣：</p>
-
                 <h4>A. 全站資料備份（換手機必用）</h4>
                 <p>位於 <strong>「首頁」</strong> 最下方的 <strong>「🔒 資料保險箱」</strong>。</p>
                 <ul class="list-disc pl-5 space-y-1">
                     <li><strong>📤 匯出備份</strong>：點擊後會下載一個 <code>.json</code> 檔案。這包含了您在網站上的 <strong>所有紀錄</strong>。請將此檔案妥善保存在雲端硬碟或 Email 中。</li>
                     <li><strong>📥 匯入備份</strong>：當您換新手機或不小心清空資料時，載入這個檔案即可還原。</li>
                 </ul>
-
                 <h4>B. 單日靈修分享（每日用）</h4>
                 <p>位於 <strong>「醃漬鹹魚（靈修）」</strong> 頁面的筆記區。</p>
                 <ul class="list-disc pl-5 space-y-1">
                     <li><strong>下載</strong>：將當天的經文、領受與禱告整理成文字檔下載。</li>
                     <li><strong>分享</strong>：手機版可直接喚起系統選單（存入 Keep、備忘錄）；電腦版則會自動複製全文，方便您貼到習慣的筆記軟體。</li>
                 </ul>
-
-                <hr class="my-6 border-dashed border-gray-300">
-
-                <h3>🐟 功能介紹</h3>
-
-                <h4>1. 首頁：鹹度監測與計畫</h4>
-                <ul class="list-disc pl-5 space-y-1">
-                    <li><strong>鹹魚鹽度監測</strong>：每天測測看你有多「鹹」，純屬娛樂。</li>
-                    <li><strong>屬靈防腐劑</strong>：當你覺得快撐不下去時，領取一句急救金句。</li>
-                    <li><strong>讀經進度條</strong>：直觀顯示您的一年讀經進度。</li>
-                </ul>
-
-                <h4>2. 醃漬鹹魚（靈修內室）</h4>
-                <p>這是您的核心靈修區，採用 <strong>「一年讀經計畫」</strong> 混合制：</p>
-                <ul class="list-disc pl-5 space-y-1">
-                    <li><strong>每日進度</strong>：系統自動安排 <strong>舊約 + 新約 + 詩篇 + 箴言</strong>。</li>
-                    <li><strong>自動經文載入</strong>：點擊進度卡片，系統會自動幫您抓取經文，直接閱讀。</li>
-                    <li><strong>醃漬筆記</strong>：記錄您的靈修感動，現在整合在經文閱讀區旁邊，使用更方便。</li>
-                </ul>
-
-                <h4>3. 鹹魚翻身（抽卡）</h4>
-                <ul class="list-disc pl-5 space-y-1">
-                    <li>每天翻一張卡，獲得主廚特製的「鹹魚雞湯」或「恩典亮光」。</li>
-                    <li><strong>📸 拍立得打包</strong>：將卡片變成一張精美的圖片下載。</li>
-                </ul>
-                
-                <p class="mt-6 text-sm text-gray-500 italic text-center">把這裡當作是一個安靜的書桌，記得在結束靈修後，點擊一下「分享」或「匯出」，將這份感動好好收藏起來喔！</p>
-                <p class="text-sm text-gray-500 italic text-center">願您的鹹魚生活，有滋有味，恩典夠用。</p>
             </div>
             
             <div class="mt-6 text-center">
@@ -888,7 +862,7 @@
         const financialEncouragements = ["積少成多，上帝的供應也是如此。", "你的每一個銅板，都是對未來的信心。", "不要為明天憂慮，因為明天自有明天的憂慮。", "耶和華以勒，祂必有預備。", "理財也是一種管家職分，你做得很好！", "哪怕只是存下一塊錢，也是向夢想靠近的一步。", "富足不在於擁有多少，而在於知足。", "種什麼收什麼，現在的儲蓄是未來收成。", "你管理金錢的方式，反映了你對上帝的信靠。", "錢是僕人，不是主人。讓它為愛神愛人效力。"];
         const keywords = ["突破", "安息", "重建", "豐盛", "勇氣", "喜樂", "專注", "謙卑", "信心", "愛", "智慧", "耐心", "更新", "感恩", "忠心"];
         
-        let onlineSaltStatusMap = [], onlinePreservativePool = [], onlineFlipQuotes = [], dailyQuotesPool = [], onlineShieldData = [];
+        let onlineSaltStatusMap = [], onlinePreservativePool = [], onlineFlipQuotes = [], dailyQuotesPool = [];
         const saltStatusMap = [{ min: 0, max: 10, title: "含鹽量 5%：新鮮淡水魚", desc: "警告：你太新鮮了，完全沒有醃漬痕跡。建議立刻去聽首詩歌壓壓驚。" }, { min: 11, max: 30, title: "含鹽量 20%：微鹹小鮮肉", desc: "微鹹。大概就是薯條忘記加鹽的程度，屬靈味道淡如水。" }, { min: 31, max: 60, title: "含鹽量 50%：入味標準款", desc: "醃漬得恰到好處！有屬靈的氣質，也有屬世的快樂，生活在恩典的平衡點。" }, { min: 61, max: 90, title: "含鹽量 80%：資深老鹹魚", desc: "太聖潔了！你現在散發出的鹽味足以讓周圍的魔鬼感到乾渴難耐。" }, { min: 91, max: 100, title: "含鹽量 99%：屬靈核彈", desc: "你已經不是鹹魚了，你是鹽本身。請喝杯珍奶平衡一下太過神聖的體質。" }];
         let preservativePool = [{ tMin: 0, tMax: 30, content: "你是神眼中的瞳人，就算你現在只是條廢魚，也是最貴的那條。" }, { tMin: 0, tMax: 50, content: "深呼吸，天塌下來有耶穌頂著，你負責躺平領受恩典就好。" }, { tMin: 0, tMax: 100, content: "不論你今天幾度，神愛你的程度始終是 100%，這才是最猛的防腐劑。" }];
         const quotes = [{ text: "凡勞苦擔重擔的人可以到我這裡來，我就使你們得安息。", source: "馬太福音 11:28", comment: "(鹹魚主廚的祕方：快去睡，別再滑手機了)" }, { text: "你們要休息，要知道我是神。", source: "詩篇 46:10", comment: "(鹹魚主廚的祕方：聽話，現在就去躺平，剩下的交給老闆)" }, { text: "喜樂的心乃是良藥，憂傷的靈使骨枯乾。", source: "箴言 17:22", comment: "(鹹魚主廚的祕方：心情好最重要，即使你只是一條鹹魚)" }];
@@ -911,10 +885,17 @@
             offering: { sentence: "信心奉獻，上帝必加倍奉還。", trans: "我們的預算缺口很大，請你掏錢。", defenses: ["奉獻是甘心樂意，不是投資理財。", "我的信心建立在神的話語，不是金錢交換。"], level: "⭐⭐⭐⭐" }
         };
 
+        const emotionCategories = {
+            pos: ["喜樂", "感恩", "平安", "興奮", "滿足", "被愛", "期待", "釋放", "勇敢", "自信", "輕鬆", "愉悅", "受尊榮", "親密", "充滿希望", "被接納", "寧靜", "寬恕", "自由", "活潑", "被理解", "受感動"],
+            neu: ["平靜", "好奇", "驚訝", "困惑", "忙碌", "疲憊", "放空", "沉思", "無感", "矛盾", "尷尬", "猶豫", "緊繃", "敏感", "脆弱", "震驚", "麻木", "疏離", "警覺", "不知所措"],
+            neg: ["生氣", "難過", "焦慮", "恐懼", "羞愧", "內疚", "孤單", "失望", "嫉妒", "煩躁", "委屈", "無助", "絕望", "壓力", "憤怒", "厭惡", "痛苦", "哀傷", "遺憾", "不安", "挫折", "懷疑", "被拒絕", "窒息", "後悔", "自卑"]
+        };
+
         const shields = { marriage: ["我在等候神所預備的亞當/夏娃，這事急不得。", "保羅說守素安常也是好的。"], salary: ["積財寶在天上，地地上地的數字如浮雲。", "耶和華以勒必有預備。"], serve: ["這陣子神帶領我進入曠野學習安靜的功課。", "我在調整屬靈的步伐。"] };
 
         let biblePlan = [];
         let prayers = [], goals = [], userSignals = [], savingsPlan = [], wishlist = [];
+        let futureLetters = []; // Letters array
         let yearlyKeyword = '';
         let currentPuaSelection = null, currentShieldSelection = null, currentSaltPercent = 0;
         let currentFullText = ""; // 用於複製功能
@@ -1071,135 +1052,19 @@
         }
 
         // --- Data Loaders ---
-        async function loadOnlineQuotes() { 
-            const d = await fetchAndParseCSV('1349046456'); 
-            if(!d) return; 
-            let idx = d.headers.findIndex(h=>['text','quote'].some(k=>h.includes(k)));
-            if (idx === -1) idx = 0;
-            dailyQuotesPool=[]; 
-            d.rows.forEach(l=>{
-                const c=d.parser(l);
-                if(c[idx]) dailyQuotesPool.push(c[idx]);
-            }); 
-            refreshDailyWord(); 
-        }
-
-        async function loadSaltStatusMap() { 
-            const d = await fetchAndParseCSV('138033526'); 
-            if(d){ 
-                onlineSaltStatusMap=[]; 
-                let idxMin = d.headers.indexOf('min_percent');
-                if (idxMin === -1) idxMin = 0;
-                let idxMax = d.headers.indexOf('max_percent');
-                if (idxMax === -1) idxMax = 1;
-                let idxTitle = d.headers.indexOf('status_title');
-                if (idxTitle === -1) idxTitle = 2;
-                let idxDesc = d.headers.indexOf('status_desc');
-                if (idxDesc === -1) idxDesc = 3;
-
-                d.rows.forEach(l=>{
-                    const c=d.parser(l);
-                    onlineSaltStatusMap.push({
-                        min:parseInt(c[idxMin]),
-                        max:parseInt(c[idxMax]),
-                        title:c[idxTitle],
-                        desc:c[idxDesc]
-                    });
-                }); 
-            } 
-        }
-
-        async function loadPreservativePool() { 
-            const d=await fetchAndParseCSV('159897993'); 
-            if(d){ 
-                let idx={
-                    min: d.headers.findIndex(h=>h.includes('min')),
-                    max: d.headers.findIndex(h=>h.includes('max')),
-                    c: d.headers.findIndex(h=>h.includes('content'))
-                }; 
-                if(idx.min === -1) idx.min = 0;
-                if(idx.max === -1) idx.max = 1;
-                if(idx.c === -1) idx.c = 2;
-
-                onlinePreservativePool=[]; 
-                d.rows.forEach(l=>{
-                    const c=d.parser(l);
-                    onlinePreservativePool.push({
-                        tMin:parseInt(c[idx.min]),
-                        tMax:parseInt(c[idx.max]),
-                        content:c[idx.c]
-                    });
-                }); 
-            } 
-        }
-
-        async function loadFlipQuotes() { 
-            const d=await fetchAndParseCSV('1402400724'); 
-            if(d){ 
-                let idx={
-                    c: d.headers.findIndex(h=>h.includes('content')),
-                    s: d.headers.findIndex(h=>h.includes('source')),
-                    cm: d.headers.findIndex(h=>h.includes('comment'))
-                }; 
-                if(idx.c === -1) idx.c = 0;
-                if(idx.s === -1) idx.s = 1;
-                if(idx.cm === -1) idx.cm = 2;
-
-                onlineFlipQuotes=[]; 
-                d.rows.forEach(l=>{
-                    const c=d.parser(l);
-                    if(c[idx.c]) onlineFlipQuotes.push({
-                        text:c[idx.c],
-                        source:c[idx.s]||"",
-                        comment:c[idx.cm]||""
-                    });
-                }); 
-            } 
-        }
-        
-        async function loadShieldData() { 
-            const d = await fetchAndParseCSV('1087555591'); 
-            if (!d) { renderShieldTags(); return; } 
-            
-            // 修正：針對使用者提供的 'label' 與 'options' 進行精確匹配
-            // 若找不到精確名稱，則嘗試模糊匹配，最後回退到索引 0 和 1
-            let idxL = d.headers.indexOf('label');
-            if (idxL === -1) idxL = d.headers.findIndex(h => h.includes('label') || h.includes('question'));
-            if (idxL === -1) idxL = 0; 
-
-            let idxO = d.headers.indexOf('options');
-            if (idxO === -1) idxO = d.headers.findIndex(h => h.includes('option') || h.includes('answer'));
-            if (idxO === -1) idxO = 1; 
-            
-            onlineShieldData = []; 
-            d.rows.forEach(l => {
-                const c = d.parser(l);
-                // 確保兩個欄位都有值才加入
-                if (c[idxL] && c[idxO]) {
-                    onlineShieldData.push({
-                        label: c[idxL].trim(),
-                        // 支援換行符號(\n)或垂直線(|)作為分隔符，並過濾空白
-                        options: c[idxO].split(/[\n|]/).map(opt => opt.trim()).filter(opt => opt.length > 0)
-                    });
-                }
-            }); 
-            
-            // 如果成功抓取到資料，重新渲染標籤
-            if (onlineShieldData.length > 0) {
-                renderShieldTags(); 
-            }
-        }
+        async function loadOnlineQuotes() { const d = await fetchAndParseCSV('1349046456'); if(!d)return; let idx=d.headers.findIndex(h=>['text','quote'].some(k=>h.includes(k)))||0; dailyQuotesPool=[]; d.rows.forEach(l=>{const c=d.parser(l);if(c[idx])dailyQuotesPool.push(c[idx])}); refreshDailyWord(); }
+        async function loadSaltStatusMap() { const d = await fetchAndParseCSV('138033526'); if(d){ onlineSaltStatusMap=[]; d.rows.forEach(l=>{const c=d.parser(l);onlineSaltStatusMap.push({min:parseInt(c[d.headers.indexOf('min_percent')]),max:parseInt(c[d.headers.indexOf('max_percent')]),title:c[d.headers.indexOf('status_title')],desc:c[d.headers.indexOf('status_desc')]})}); } }
+        async function loadPreservativePool() { const d=await fetchAndParseCSV('159897993'); if(d){ let idx={min:d.headers.findIndex(h=>h.includes('min'))||0,max:d.headers.findIndex(h=>h.includes('max'))||1,c:d.headers.findIndex(h=>h.includes('content'))||2}; onlinePreservativePool=[]; d.rows.forEach(l=>{const c=d.parser(l);onlinePreservativePool.push({tMin:parseInt(c[idx.min]),tMax:parseInt(c[idx.max]),content:c[idx.c]})}); } }
+        async function loadFlipQuotes() { const d=await fetchAndParseCSV('1402400724'); if(d){ let idx={c:d.headers.findIndex(h=>h.includes('content'))||0,s:d.headers.findIndex(h=>h.includes('source'))||1,cm:d.headers.findIndex(h=>h.includes('comment'))||2}; onlineFlipQuotes=[]; d.rows.forEach(l=>{const c=d.parser(l);if(c[idx.c])onlineFlipQuotes.push({text:c[idx.c],source:c[idx.s]||"",comment:c[idx.cm]||""})}); } }
+        async function loadShieldData() { const d=await fetchAndParseCSV('1087555591'); if(!d){renderShieldTags();return;} let idx={l:d.headers.findIndex(h=>h.includes('label'))||0,o:d.headers.findIndex(h=>h.includes('options'))||1}; onlineShieldData=[]; d.rows.forEach(l=>{const c=d.parser(l);if(c[idx.l])onlineShieldData.push({label:c[idx.l],options:c[idx.o].split(/[|\n]/)})}); renderShieldTags(); }
         
         async function loadPuaChecklist() {
             const d = await fetchAndParseCSV('494946164');
             if (d) {
                 let idx = {
-                    t: d.headers.findIndex(h => h.includes('question') || h.includes('題目')),
-                    w: d.headers.findIndex(h => h.includes('weight') || h.includes('權重'))
+                    t: d.headers.findIndex(h => h.includes('question') || h.includes('題目')) || 0,
+                    w: d.headers.findIndex(h => h.includes('weight') || h.includes('權重')) || 1
                 };
-                if (idx.t === -1) idx.t = 0;
-                if (idx.w === -1) idx.w = 1;
-
                 onlinePuaChecklist = [];
                 d.rows.forEach(l => {
                     const c = d.parser(l);
@@ -1207,41 +1072,6 @@
                         onlinePuaChecklist.push({ text: c[idx.t], weight: parseInt(c[idx.w]) || 1 });
                     }
                 });
-            }
-        }
-
-        async function loadPuaData() {
-            const d = await fetchAndParseCSV('0'); // gid 0 for PUA Dictionary
-            if (!d) return;
-            
-            // Dynamic header mapping with fallback
-            let idx = {
-                s: d.headers.findIndex(h => h.includes('sentence') || h.includes('金句')),
-                t: d.headers.findIndex(h => h.includes('trans') || h.includes('翻譯')),
-                d: d.headers.findIndex(h => h.includes('defense') || h.includes('回擊') || h.includes('os')),
-                l: d.headers.findIndex(h => h.includes('level') || h.includes('毒性'))
-            };
-            if (idx.s === -1) idx.s = 0;
-            if (idx.t === -1) idx.t = 1;
-            if (idx.d === -1) idx.d = 2;
-            if (idx.l === -1) idx.l = 3;
-
-            let newPuaData = {};
-            d.rows.forEach((line, index) => {
-                const c = d.parser(line);
-                if (c[idx.s]) {
-                    newPuaData[`online_${index}`] = {
-                        sentence: c[idx.s],
-                        trans: c[idx.t] || "翻譯載入中...",
-                        defenses: c[idx.d] ? c[idx.d].split(/[|\n]/).filter(x => x.trim()) : ["(微笑不語)", "主都知道"],
-                        level: c[idx.l] || "⭐⭐⭐"
-                    };
-                }
-            });
-
-            if (Object.keys(newPuaData).length > 0) {
-                puaData = newPuaData;
-                renderPuaTags(); 
             }
         }
 
@@ -1350,45 +1180,60 @@
         function handleJournalDateChange(dateKey) {
             renderPlanButtons(dateKey);
             
+            // Load Devotion Note
             ['note-scripture', 'note-reflection', 'note-prayer'].forEach(id => {
                 const saved = localStorage.getItem(`${dateKey}-${id}`);
                 const el = document.getElementById(id);
                 if(el) el.value = saved || "";
             });
 
-            const savedMood = localStorage.getItem(`${dateKey}-note-mood`);
-            const moodBtns = document.querySelectorAll('.mood-btn');
-            moodBtns.forEach(b => b.classList.remove('active'));
-            if(savedMood) {
-                const targetBtn = Array.from(moodBtns).find(b => b.dataset.mood === savedMood);
-                if(targetBtn) targetBtn.classList.add('active');
-            }
+            // Load Gratitude
+            const savedGratitude = localStorage.getItem(`${dateKey}-gratitude-text`);
+            if(document.getElementById('gratitude-text')) document.getElementById('gratitude-text').value = savedGratitude || "";
+
+            // Load Emotion (Updated 5 fields)
+            ['emotion-event', 'emotion-feeling', 'emotion-belief', 'emotion-god-view', 'emotion-prayer'].forEach(id => {
+                const saved = localStorage.getItem(`${dateKey}-${id}`);
+                const el = document.getElementById(id);
+                if(el) el.value = saved || "";
+            });
+
+            // Load Mood - No longer needed as view is removed, but kept for legacy data safety
         }
 
         function renderPlanButtons(dateKey) {
             const planList = document.getElementById('plan-list');
-            const mobilePlanList = document.getElementById('mobile-plan-list');
-            if (!planList || !mobilePlanList) return;
+            const mobilePlanRow1 = document.getElementById('mobile-plan-row-1');
+            const mobilePlanRow2 = document.getElementById('mobile-plan-row-2');
+            if (!planList || !mobilePlanRow1 || !mobilePlanRow2) return;
 
             planList.innerHTML = "";
-            mobilePlanList.innerHTML = "";
+            mobilePlanRow1.innerHTML = "";
+            mobilePlanRow2.innerHTML = "";
             
             const todayPlan = biblePlan.find(p => p.dateStr === dateKey) || biblePlan[0];
             const details = todayPlan.details || [];
 
-            const createBtn = (item) => {
+            const createBtn = (item, isMobile = false) => {
                 const btn = document.createElement('button');
-                btn.className = "w-full text-left px-8 py-12 rounded-xl border border-[#D6D0C8] bg-white hover:border-[#A68C76] hover:bg-[#FAF9F6] transition-all group flex flex-col gap-6 shadow-sm hover:shadow-md min-h-[140px]";
-                btn.innerHTML = `
-                    <div class="flex justify-between items-center">
-                        <span class="text-[10px] font-bold text-[#B0AAA3] uppercase group-hover:text-[#A68C76] transition-colors tracking-widest">${item.type}</span>
-                        <div class="w-2 h-2 rounded-full bg-[#EBE6DE] group-hover:bg-[#A68C76] transition-colors"></div>
-                    </div>
-                    <span class="text-base font-serif text-[#5E5A54] group-hover:text-[#3E3A34] tracking-wide">${item.abbr}</span>
-                `;
+                if (isMobile) {
+                    btn.className = "flex-shrink-0 px-1 py-2 border border-[#D6D0C8] rounded-xl bg-white text-xs hover:bg-[#F2EBE5] hover:border-[#A68C76] transition-colors flex flex-col items-center justify-center gap-1 w-[85px] shadow-sm h-14";
+                    btn.innerHTML = `<span class="text-[9px] text-[#B0AAA3] tracking-widest scale-90 origin-bottom">${item.type}</span><span class="font-serif text-[#5E5A54] text-xs font-bold whitespace-nowrap">${item.abbr}</span>`;
+                } else {
+                    btn.className = "w-full text-left px-8 py-12 rounded-xl border border-[#D6D0C8] bg-white hover:border-[#A68C76] hover:bg-[#FAF9F6] transition-all group flex flex-col gap-6 shadow-sm hover:shadow-md min-h-[140px]";
+                    btn.innerHTML = `
+                        <div class="flex justify-between items-center">
+                            <span class="text-[10px] font-bold text-[#B0AAA3] uppercase group-hover:text-[#A68C76] transition-colors tracking-widest">${item.type}</span>
+                            <div class="w-2 h-2 rounded-full bg-[#EBE6DE] group-hover:bg-[#A68C76] transition-colors"></div>
+                        </div>
+                        <span class="text-base font-serif text-[#5E5A54] group-hover:text-[#3E3A34] tracking-wide">${item.abbr}</span>
+                    `;
+                }
                 
-                if (item.isNote) {
-                    btn.onclick = () => showNotes();
+                if (item.action) {
+                    btn.onclick = item.action;
+                } else if (item.isNote) {
+                    btn.onclick = () => showView('note');
                 } else {
                     btn.onclick = () => showReader(item);
                 }
@@ -1396,40 +1241,44 @@
                 return btn;
             };
 
-            const createMobileBtn = (item) => {
-                const btn = document.createElement('button');
-                btn.className = "flex-shrink-0 px-3 py-4 border border-[#D6D0C8] rounded-xl bg-white text-xs hover:bg-[#F2EBE5] hover:border-[#A68C76] transition-colors flex flex-col items-center justify-center gap-1 min-w-[70px] shadow-sm";
-                btn.innerHTML = `<span class="text-[10px] text-[#B0AAA3] tracking-widest scale-90 origin-bottom">${item.type}</span><span class="font-serif text-[#5E5A54] text-sm">${item.abbr}</span>`;
-                
-                if (item.isNote) {
-                    btn.onclick = () => showNotes();
-                } else {
-                    btn.onclick = () => showReader(item);
-                }
-                
-                return btn;
-            };
-
+            // Row 1: Readings
             details.forEach(item => {
                  if(item.isNote) return; 
                  planList.appendChild(createBtn(item));
-                 mobilePlanList.appendChild(createMobileBtn(item));
+                 mobilePlanRow1.appendChild(createBtn(item, true));
             });
 
-            const noteItem = { type: '筆記', abbr: '醃漬筆記', isNote: true };
-            planList.appendChild(createBtn(noteItem));
-            mobilePlanList.appendChild(createMobileBtn(noteItem));
+            // Row 2: Journals (Updated 'Mood' to 'Future')
+            const journals = [
+                { type: '筆記', abbr: '靈修筆記', isNote: true, action: () => showView('note') },
+                { type: '感恩', abbr: '感恩日記', action: () => showView('gratitude') },
+                { type: '情緒', abbr: '情緒日記', action: () => showView('emotion') },
+                { type: '未來', abbr: '寫給未來', action: () => showView('future') }
+            ];
+
+            journals.forEach(item => {
+                if (item.type === '筆記') planList.appendChild(createBtn(item)); 
+                mobilePlanRow2.appendChild(createBtn(item, true));
+            });
         }
         
         function showReader(item) {
+            hideAllViews();
             document.getElementById('view-reader').classList.remove('hidden');
-            document.getElementById('view-note').classList.add('hidden');
             fetchBible(item);
         }
         
-        function showNotes() {
-            document.getElementById('view-reader').classList.add('hidden');
-            document.getElementById('view-note').classList.remove('hidden');
+        function showView(viewName) {
+            hideAllViews();
+            document.getElementById(`view-${viewName}`).classList.remove('hidden');
+            if (viewName === 'future') renderTimeCapsule(); // Refresh list on view
+        }
+
+        function hideAllViews() {
+            ['reader', 'note', 'gratitude', 'emotion', 'future'].forEach(v => {
+                const el = document.getElementById(`view-${v}`);
+                if(el) el.classList.add('hidden');
+            });
         }
 
         async function fetchBible(item) {
@@ -1509,11 +1358,6 @@
             content.innerHTML = `<div class="max-w-3xl mx-auto">${html}</div>`;
             currentFullText = textBuffer; 
             copyBtn.classList.remove('hidden');
-            
-            // Fix: Reset scroll position to top
-            content.scrollTop = 0;
-            // Fix: Ensure content aligns to top, not center
-            content.classList.remove('justify-center');
         }
 
         function toggleVerse(el) {
@@ -1550,6 +1394,130 @@
             const status = document.getElementById('save-status');
             status.style.opacity = '1';
             setTimeout(() => { status.style.opacity = '0'; }, 2000);
+        }
+
+        function addEmotionTag(tag) {
+            const ta = document.getElementById('emotion-feeling'); // Target the "Feeling" input
+            const currentVal = ta.value;
+            // Add comma if not empty
+            ta.value = currentVal ? currentVal + `, ${tag}` : tag;
+            
+            // Trigger save
+            const picker = document.getElementById('journal-date-picker');
+            if(picker) saveNote(picker.value.substring(5), 'emotion-feeling', ta.value);
+        }
+
+        // Render Emotion Chart
+        function renderEmotionChart() {
+            const renderGroup = (id, tags, colorClass) => {
+                const container = document.getElementById(id);
+                if(!container) return;
+                container.innerHTML = tags.map(tag => 
+                    `<span class="px-3 py-1 rounded-full text-xs cursor-pointer border transition-all ${colorClass}" onclick="addEmotionTag('${tag}')">${tag}</span>`
+                ).join('');
+            };
+
+            renderGroup('emotion-tags-pos', emotionCategories.pos, 'bg-[#F2F9F5] text-m-green border-[#E0EFE5] hover:bg-m-green hover:text-white');
+            renderGroup('emotion-tags-neu', emotionCategories.neu, 'bg-[#F9FAFB] text-gray-500 border-[#F3F4F6] hover:bg-gray-400 hover:text-white');
+            renderGroup('emotion-tags-neg', emotionCategories.neg, 'bg-[#FFF5F5] text-m-rose border-[#FFE0E0] hover:bg-m-rose hover:text-white');
+        }
+
+        // --- Future Letters Logic (NEW) ---
+        function saveFutureLetter() {
+            const dateInput = document.getElementById('future-date');
+            const contentInput = document.getElementById('future-content');
+            
+            if(!dateInput.value || !contentInput.value.trim()) {
+                showToast('請填寫日期與內容');
+                return;
+            }
+
+            const today = new Date().toISOString().split('T')[0];
+            if(dateInput.value <= today) {
+                showToast('請選擇未來的日期');
+                return;
+            }
+
+            const letter = {
+                id: Date.now(),
+                createDate: today,
+                deliveryDate: dateInput.value,
+                content: contentInput.value,
+                read: false
+            };
+
+            futureLetters.push(letter);
+            saveToStorage('futureLetters', JSON.stringify(futureLetters));
+            
+            showToast('📩 信件已封存寄出！');
+            contentInput.value = '';
+            dateInput.value = '';
+            renderTimeCapsule();
+        }
+
+        function renderTimeCapsule() {
+            const list = document.getElementById('future-list');
+            if(!list) return;
+            
+            list.innerHTML = '';
+            
+            const today = new Date().toISOString().split('T')[0];
+            // Sort: Delivery Date Ascending
+            const sortedLetters = [...futureLetters].sort((a, b) => a.deliveryDate.localeCompare(b.deliveryDate));
+
+            if(sortedLetters.length === 0) {
+                list.innerHTML = '<div class="text-center py-8 text-xs text-[#D6D0C8] italic">信箱是空的...</div>';
+                return;
+            }
+
+            sortedLetters.forEach(l => {
+                const isLocked = l.deliveryDate > today;
+                const div = document.createElement('div');
+                div.className = `letter-list-item ${isLocked ? 'locked' : (l.read ? '' : 'new')}`;
+                div.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <span class="text-xl">${isLocked ? '🔒' : (l.read ? '📨' : '📩')}</span>
+                        <div>
+                            <div class="text-xs text-[#A68C76] font-bold">寄給 ${l.deliveryDate}</div>
+                            <div class="text-[10px] text-[#9E9791]">來自 ${l.createDate} 的你</div>
+                        </div>
+                    </div>
+                    ${!isLocked && !l.read ? '<div class="w-2 h-2 rounded-full bg-red-400"></div>' : ''}
+                `;
+                
+                if (!isLocked) {
+                    div.onclick = () => openLetter(l);
+                }
+                list.appendChild(div);
+            });
+        }
+
+        function checkTimeCapsule() {
+            const today = new Date().toISOString().split('T')[0];
+            const arrivedLetters = futureLetters.filter(l => l.deliveryDate <= today && !l.read);
+            
+            if(arrivedLetters.length > 0) {
+                // Show notification or automatically open the first one
+                showToast(`🎉 收到 ${arrivedLetters.length} 封來自過去的信！`);
+                // Optional: Automatically open the first one
+                setTimeout(() => openLetter(arrivedLetters[0]), 1000);
+            }
+        }
+
+        function openLetter(letter) {
+            const modal = document.getElementById('letter-modal');
+            document.getElementById('letter-date-display').innerText = `寫於：${letter.createDate} | 寄達：${letter.deliveryDate}`;
+            document.getElementById('letter-content-display').innerText = letter.content;
+            modal.classList.add('show');
+            
+            // Mark as read
+            letter.read = true;
+            saveToStorage('futureLetters', JSON.stringify(futureLetters));
+            renderTimeCapsule();
+        }
+
+        function closeLetterModal() {
+            document.getElementById('letter-modal').classList.remove('show');
         }
 
         // --- PUA & Shield Logic ---
@@ -1668,7 +1636,24 @@
             const s = document.getElementById('note-scripture').value;
             const r = document.getElementById('note-reflection').value;
             const p = document.getElementById('note-prayer').value;
-            const content = `靈修日誌 ${date} ${mood}\n\n【感動經文】\n${s}\n\n【領受】\n${r}\n\n【禱告】\n${p}`;
+            
+            let content = `靈修日誌 ${date} ${mood}\n\n【感動經文】\n${s}\n\n【領受】\n${r}\n\n【禱告】\n${p}\n\n`;
+            
+            // Append Gratitude
+            const gText = document.getElementById('gratitude-text') ? document.getElementById('gratitude-text').value : "";
+            if(gText) content += `【感恩日記】\n${gText}\n\n`;
+            
+            // Append Emotion (Structured)
+            const eEvent = document.getElementById('emotion-event').value;
+            const eFeel = document.getElementById('emotion-feeling').value;
+            const eBelief = document.getElementById('emotion-belief').value;
+            const eGod = document.getElementById('emotion-god-view').value;
+            const ePrayer = document.getElementById('emotion-prayer').value;
+            
+            if(eEvent || eFeel || eBelief) {
+                content += `【情緒覺察】\n事件：${eEvent}\n情緒：${eFeel}\n信念：${eBelief}\n神說：${eGod}\n禱告：${ePrayer}\n\n`;
+            }
+            
             const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
@@ -1685,7 +1670,8 @@
                 userSignals: localStorage.getItem('userSignals'), 
                 yearlyKeyword: localStorage.getItem('yearlyKeyword'), 
                 savingsPlan: localStorage.getItem('savingsPlan'), 
-                wishlist: localStorage.getItem('wishlist') 
+                wishlist: localStorage.getItem('wishlist'),
+                futureLetters: localStorage.getItem('futureLetters')
             };
             const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
@@ -1704,6 +1690,7 @@
                     if (data.yearlyKeyword) saveToStorage('yearlyKeyword', data.yearlyKeyword);
                     if (data.savingsPlan) saveToStorage('savingsPlan', data.savingsPlan);
                     if (data.wishlist) saveToStorage('wishlist', data.wishlist);
+                    if (data.futureLetters) saveToStorage('futureLetters', data.futureLetters);
                     showToast('匯入成功！頁面將重新整理。'); setTimeout(() => location.reload(), 1500);
                 } catch (err) { showToast('匯入失敗，檔案格式可能錯誤。'); }
             };
@@ -1813,6 +1800,8 @@
             try { userSignals = JSON.parse(localStorage.getItem('userSignals')||'[]'); } catch(e){}
             try { savingsPlan = JSON.parse(localStorage.getItem('savingsPlan')||JSON.stringify(new Array(366).fill(false))); } catch(e){}
             try { wishlist = JSON.parse(localStorage.getItem('wishlist')||'[]'); } catch(e){}
+            try { futureLetters = JSON.parse(localStorage.getItem('futureLetters')||'[]'); } catch(e){}
+            
             yearlyKeyword = localStorage.getItem('yearlyKeyword')||'';
             refreshDailyWord();
             refreshFinancialEncouragement();
@@ -1822,7 +1811,6 @@
             generateAppIcons();
             initData();
             loadOnlineQuotes(); loadPreservativePool(); loadFlipQuotes(); loadShieldData(); loadPuaChecklist();
-            loadPuaData(); 
             renderPuaTags(); 
             loadSaltStatusMap().then(()=>setRandomStatus());
             const picker = document.getElementById('journal-date-picker');
@@ -1850,7 +1838,8 @@
                     } else { showToast("沒有內容可複製"); }
                 });
             }
-            ['note-scripture', 'note-reflection', 'note-prayer'].forEach(id => {
+            // Add listeners for all text areas including new ones (Updated list)
+            ['note-scripture', 'note-reflection', 'note-prayer', 'gratitude-text', 'emotion-event', 'emotion-feeling', 'emotion-belief', 'emotion-god-view', 'emotion-prayer', 'mood-text'].forEach(id => {
                 const el = document.getElementById(id);
                 if(el) { el.addEventListener('input', () => { const dateKey = picker.value.substring(5); saveNote(dateKey, id, el.value); }); }
             });
@@ -1866,6 +1855,8 @@
             updateHomeStatus();
             renderSavingsGrid();
             renderWishlist();
+            renderEmotionChart();
+            checkTimeCapsule(); // Check for letters on load
         };
     </script>
 </body>
