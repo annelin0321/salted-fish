@@ -286,9 +286,15 @@
 
     <!-- 內部捲動容器 (App Shell) -->
     <div id="scroll-wrapper">
-        <header>
+        <header class="relative">
             <h1 class="main-title">機智的鹹魚生活</h1>
             <div class="subtitle">Wise Salted Fish Life</div>
+            
+            <!-- 新增：聖經目錄入口按鈕 (絕對定位在右上角) -->
+            <button onclick="showSection('bible-directory')" class="absolute top-6 right-4 p-2 text-[#A68C76] hover:bg-[#F2EBE5] rounded-full transition-colors" title="開啟聖經目錄">
+                <span class="text-xl">📖</span>
+            </button>
+
             <div onclick="showHelpModal()" class="mt-4 inline-block px-4 py-2 bg-[#F9F7F5] border border-[#EBE6DE] rounded-lg cursor-pointer hover:bg-[#F2EBE5] transition-colors shadow-sm group">
                 <p class="text-xs text-[#94908A] group-hover:text-[#A68C76] tracking-widest flex items-center justify-center gap-1 transition-colors">
                     <span class="animate-pulse">⚠️</span> 投資天國穩賺不賠，醃漬前請詳閱 <span class="underline decoration-dotted underline-offset-4 font-bold ml-1">公開說明書 🔗</span>
@@ -350,16 +356,59 @@
                 </div>
             </section>
 
+            <!-- 新增：獨立聖經閱讀頁面 (Standalone Reader) -->
+            <section id="bible-reader-standalone" class="section h-full w-full bg-white hidden fixed top-0 left-0 z-[2000] overflow-hidden flex flex-col">
+                <div class="px-6 py-4 border-b border-[#F5F2EA] flex justify-between items-center bg-white/95 backdrop-blur shrink-0">
+                    <h2 id="standalone-reader-title" class="text-lg font-bold font-serif text-[#5E5A54] tracking-wide">--</h2>
+                    <button onclick="showSection('bible-directory')" class="p-2 bg-[#F9F7F5] rounded-full text-[#94908A] hover:bg-[#EBE6DE] hover:text-[#5E5A54] transition-colors text-xs font-bold px-4">
+                        返回目錄 ✕
+                    </button>
+                </div>
+                <div id="standalone-reader-content" class="flex-1 overflow-y-auto p-6 md:p-10 bible-text text-[#5E5A54] text-lg leading-loose journal-scroll pb-20">
+                    <!-- Content -->
+                </div>
+            </section>
+
+            <!-- 補回：聖經目錄 (Bible Directory) -->
+            <section id="bible-directory" class="section h-full w-full">
+                <div class="card" style="min-height: 80vh;">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-xl font-bold font-serif m-0">📚 聖經目錄</h2>
+                        <button onclick="showSection('home')" class="text-sm text-[#94908A] hover:text-[#5E5A54]">關閉 ✕</button>
+                    </div>
+
+                    <!-- 舊約/新約 切換 -->
+                    <div class="flex border-b border-[#EBE6DE] mb-6">
+                        <button onclick="switchDirectoryTab('ot')" id="dir-tab-ot" class="flex-1 py-2 text-sm font-bold text-[#A68C76] border-b-2 border-[#A68C76] transition-colors">舊約 Old Testament</button>
+                        <button onclick="switchDirectoryTab('nt')" id="dir-tab-nt" class="flex-1 py-2 text-sm font-bold text-[#9E9791] border-b-2 border-transparent hover:text-[#5E5A54] transition-colors">新約 New Testament</button>
+                    </div>
+
+                    <!-- 書卷列表 -->
+                    <div id="dir-book-list" class="grid grid-cols-4 gap-2 mb-6">
+                        <!-- JS Rendered -->
+                    </div>
+
+                    <!-- 章節選擇 (預設隱藏) -->
+                    <div id="dir-chapter-area" class="hidden border-t border-dashed border-[#EBE6DE] pt-4 animation-fadeIn">
+                        <h3 id="dir-selected-book" class="text-center font-serif text-lg font-bold text-[#5E5A54] mb-4">--</h3>
+                        <div id="dir-chapter-list" class="grid grid-cols-6 gap-2">
+                            <!-- JS Rendered -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+
             <!-- 靈修 (Devotion) -->
             <section id="devotion" class="section h-full w-full bg-[#FDFCF8]">
                 <div class="h-full flex flex-col w-full">
                     <header class="bg-white/80 backdrop-blur-md border-b border-[#EBE6DE] sticky top-0 z-20 shrink-0 w-full" style="display:block!important; padding: 0;">
                         <div class="max-w-7xl mx-auto px-4 md:px-6 flex justify-between items-center h-16 gap-3 md:gap-6">
                             <div class="flex items-center gap-3 shrink-0">
-                                <div class="flex items-center gap-2">
+                                <!-- 點擊 Logo 可以返回目錄 -->
+                                <button onclick="showSection('bible-directory')" class="flex items-center gap-2 hover:opacity-70 transition-opacity">
                                     <span class="text-2xl opacity-80">🐟</span>
                                     <h1 class="block text-lg font-bold tracking-widest text-[#5E5A54] m-0">醃漬鹹魚</h1>
-                                </div>
+                                </button>
                                 <div class="flex items-center bg-[#F9F7F5] rounded-full px-3 py-1.5 border border-[#EBE6DE] hover:border-[#D6D0C8] transition-colors">
                                     <input type="date" id="journal-date-picker" class="bg-transparent border-none text-xs md:text-sm font-medium focus:ring-0 outline-none cursor-pointer w-[110px] md:w-auto text-[#5E5A54]">
                                     <button id="journal-checkin-btn" class="ml-2 text-xs text-gray-400 hover:text-m-green" title="打卡完成">✔️</button>
@@ -592,7 +641,13 @@
                                 <p class="quote-source" id="quote-source" class="text-muted" style="font-weight:500;">--</p>
                                 <div style="width: 40%; height: 1px; border-top: 1px dashed #D6D0C8; margin: 30px auto;"></div>
                                 <p id="quote-comment"> </p>
-                                <button class="btn-icon" onclick="saveCardImage(event)" style="margin-top:25px; font-weight:bold;">📸 拍立得打包 (存圖)</button>
+                                
+                                <!-- 新增：閱讀完整章節按鈕 -->
+                                <button id="read-chapter-btn" class="hidden mt-4 mb-2 text-xs font-bold text-[#A68C76] bg-[#FDFBF7] border border-[#EBE6DE] px-4 py-2 rounded-full hover:bg-[#A68C76] hover:text-white transition-all shadow-sm flex items-center gap-2 mx-auto">
+                                    <span>📖</span> 閱讀完整章節
+                                </button>
+
+                                <button class="btn-icon" onclick="saveCardImage(event)" style="margin-top:15px; font-weight:bold;">📸 拍立得打包 (存圖)</button>
                             </div>
                         </div>
                     </div>
@@ -917,6 +972,7 @@
         let currentFullText = ""; // 用於複製功能
         let selectedVerses = new Set(); // Store indices or IDs of selected verses
         let onlinePuaChecklist = []; // 線上題庫
+        let currentDirectoryTab = 'ot'; // 'ot' or 'nt'
 
         // --- Helper Functions ---
         function stripHtml(html) {
@@ -946,46 +1002,6 @@
                 const headers = parseCSVLine(rows[0]).map(h => h.trim().toLowerCase().replace(/^\ufeff/, ''));
                 return { headers, rows: rows.slice(1), parser: parseCSVLine };
             } catch (error) { return null; }
-        }
-
-        // 新增：載入靈修小語
-        async function loadDevotionalContent() {
-            try {
-                // 使用 raw.githubusercontent.com 確保跨域存取正常
-                const url = 'https://raw.githubusercontent.com/annelin0321/witty-bible-data/main/devotionals.json';
-                const response = await fetch(url);
-                
-                if (!response.ok) return;
-                const data = await response.json();
-                
-                if (!Array.isArray(data) || data.length === 0) return;
-
-                // 使用今天的日期作為種子，確保當天看到的內容固定
-                const today = new Date();
-                const seed = today.getFullYear() * 10000 + (today.getMonth() + 1) * 100 + today.getDate();
-                const index = seed % data.length;
-                const item = data[index];
-
-                const card = document.getElementById('daily-devotional-card');
-                const titleEl = document.getElementById('devotional-title');
-                const textEl = document.getElementById('devotional-text');
-                const songNameEl = document.getElementById('devotional-song-name');
-                const songLinkEl = document.getElementById('devotional-song-link');
-
-                if(card && titleEl && textEl && songNameEl && songLinkEl) {
-                    titleEl.innerText = item.title || "今日靈糧";
-                    textEl.innerText = item.text || "";
-                    songNameEl.innerText = item.song || "安靜默想";
-                    songLinkEl.href = item.link || "#";
-                    
-                    // 顯示卡片
-                    card.classList.remove('hidden');
-                }
-
-            } catch (e) {
-                console.warn("Devotional content load failed:", e);
-                // 失敗時保持隱藏，不影響主功能
-            }
         }
 
         function showToast(msg) {
@@ -1155,8 +1171,93 @@
             updateHomeStatus();
         }
         function getPreservative() { const d=document.getElementById('preservative-display'); d.style.opacity=0; const pool=onlinePreservativePool.length?onlinePreservativePool:preservativePool; const msg=pool[Math.floor(Math.random()*pool.length)].content; setTimeout(()=>{d.innerText=`「${msg}」`;d.style.opacity=1;},200); }
-        function flipCard() { document.querySelector('.flip-container').classList.toggle('flipped'); if(document.querySelector('.flip-container').classList.contains('flipped')){const q=(onlineFlipQuotes.length?onlineFlipQuotes:quotes)[Math.floor(Math.random()*onlineFlipQuotes.length||quotes.length)]; document.getElementById('quote-content').innerText=q.text; document.getElementById('quote-source').innerText=q.source; document.getElementById('quote-comment').innerHTML=`<strong>主廚祕方：</strong><br>${q.comment.replace(/[()]/g,'').replace('鹹魚主廚的祕方：','')}`; } }
+        
+        // --- Helper to find book info from source string ---
+        function findBookFromSource(source) {
+            if (!source) return null;
+            // Clean up source string (remove spaces) for better matching
+            const cleanSource = source.replace(/\s+/g, '');
+            
+            for (let book of bibleBooks) {
+                // Check if starts with full name or abbr
+                if (cleanSource.startsWith(book.name) || cleanSource.startsWith(book.abbr)) {
+                    // Remove book name to isolate chapter number
+                    // e.g. "馬太福音11:28" -> "11:28"
+                    let temp = cleanSource.replace(book.name, '').replace(book.abbr, '');
+                    // Regex to capture the first number (chapter)
+                    let match = temp.match(/^(\d+)/);
+                    if (match) {
+                        return { 
+                            code: book.code, 
+                            chapter: parseInt(match[1]), 
+                            title: `${book.name} ${match[1]}章` // Friendly title for reader
+                        };
+                    }
+                }
+            }
+            return null;
+        }
+
+        function flipCard() { 
+            const container = document.querySelector('.flip-container');
+            container.classList.toggle('flipped'); 
+            
+            if(container.classList.contains('flipped')){
+                const q=(onlineFlipQuotes.length?onlineFlipQuotes:quotes)[Math.floor(Math.random()*onlineFlipQuotes.length||quotes.length)]; 
+                document.getElementById('quote-content').innerText=q.text; 
+                document.getElementById('quote-source').innerText=q.source; 
+                document.getElementById('quote-comment').innerHTML=`<strong>主廚祕方：</strong><br>${q.comment.replace(/[()]/g,'').replace('鹹魚主廚的祕方：','')}`; 
+
+                // --- New Logic: Show Read Button if source is valid ---
+                const ref = findBookFromSource(q.source);
+                const readBtn = document.getElementById('read-chapter-btn');
+                
+                if (ref && readBtn) {
+                    readBtn.classList.remove('hidden');
+                    readBtn.onclick = (e) => {
+                        e.stopPropagation(); // Prevent card flip
+                        // Use openStandaloneReader instead of goToScripture
+                        openStandaloneReader(ref.code, ref.chapter, ref.title);
+                    };
+                } else if (readBtn) {
+                    readBtn.classList.add('hidden');
+                }
+            } 
+        }
+
+        // Renamed and updated from goToScripture to use standalone reader
+        async function openStandaloneReader(code, chapter, title) {
+            showSection('bible-reader-standalone'); // This hides others and shows this one
+            
+            const titleEl = document.getElementById('standalone-reader-title');
+            const contentEl = document.getElementById('standalone-reader-content');
+            
+            if(titleEl) titleEl.innerText = title;
+            if(contentEl) contentEl.innerHTML = '<div class="h-full flex flex-col items-center justify-center gap-4"><span class="loader"></span><span class="text-xs text-[#94908A] tracking-widest animate-pulse font-serif">讀取中...</span></div>';
+
+            try {
+                // Fetch logic (same API)
+                const res = await fetch(`https://bolls.life/get-text/CUNP/${code}/${chapter}/`);
+                const data = await res.json();
+                
+                let html = "";
+                data.forEach(v => {
+                    const text = stripHtml(v.text);
+                     html += `
+                        <div class="mb-4">
+                            <span class="text-xs text-[#D6D0C8] font-mono mr-1 select-none">${v.verse}</span>
+                            <span>${text}</span>
+                        </div>
+                    `;
+                });
+                if(contentEl) contentEl.innerHTML = `<div class="max-w-3xl mx-auto">${html}</div>`;
+            } catch (e) {
+                if(contentEl) contentEl.innerHTML = '<div class="text-center text-[#94908A] py-10">讀取失敗，請檢查網路。</div>';
+            }
+        }
+
         function saveCardImage(e) { e.stopPropagation(); showToast('📸 截圖中...'); const temp=document.createElement('div'); temp.style.position='fixed'; temp.style.top='0'; temp.style.zIndex='-9'; temp.style.width='350px'; temp.innerHTML=`<div style="background:#FDFBF7;border:2px solid #7CA1B3;border-radius:24px;padding:40px 30px;text-align:center;font-family:'Noto Sans TC';"><p style="font-family:'Noto Serif TC';font-size:1.4rem;color:#5A524C;margin-bottom:20px;">${document.getElementById('quote-content').innerText}</p><p style="color:#9E9791;margin-bottom:30px;">—— ${document.getElementById('quote-source').innerText}</p><div style="width: 40%; height: 1px; border-top: 1px dashed #D6D0C8; margin: 30px auto;"></div><div style="color:#7CA1B3;font-style:italic;padding-top:15px;">${document.getElementById('quote-comment').innerHTML}</div><div style="margin-top:30px;font-size:0.75rem;color:#D4B483;">機智的鹹魚生活</div></div>`; document.body.appendChild(temp); html2canvas(temp.firstChild,{scale:2,backgroundColor:null}).then(c=>{const a=document.createElement('a');a.download=`salted-fish-${Date.now()}.png`;a.href=c.toDataURL();a.click();document.body.removeChild(temp);showToast('✅ 下載完成');}); }
+        
         function showSection(id, btn) { 
             if (id !== 'flip') {
                 const flipper = document.querySelector('.flip-container');
@@ -1192,6 +1293,15 @@
                 const shieldRes = document.getElementById('shield-result');
                 if (shieldRes) shieldRes.style.opacity = 0;
             }
+            
+            // --- Reset Bible Directory if leaving ---
+            if (id !== 'bible-directory') {
+                 const chapArea = document.getElementById('dir-chapter-area');
+                 if(chapArea) chapArea.classList.add('hidden');
+            } else {
+                 // If entering Bible Directory, init render
+                 renderBibleDirectory();
+            }
 
             document.querySelectorAll('.section').forEach(s=>s.classList.remove('active')); 
             
@@ -1216,6 +1326,70 @@
                 main.classList.remove('container-full');
                 document.getElementById('scroll-wrapper').scrollTo(0,0);
             }
+        }
+
+        // --- Bible Directory Logic ---
+        function switchDirectoryTab(tab) {
+            currentDirectoryTab = tab;
+            // Update UI styles
+            const otBtn = document.getElementById('dir-tab-ot');
+            const ntBtn = document.getElementById('dir-tab-nt');
+            
+            if(tab === 'ot') {
+                otBtn.className = "flex-1 py-2 text-sm font-bold text-[#A68C76] border-b-2 border-[#A68C76] transition-colors";
+                ntBtn.className = "flex-1 py-2 text-sm font-bold text-[#9E9791] border-b-2 border-transparent hover:text-[#5E5A54] transition-colors";
+            } else {
+                otBtn.className = "flex-1 py-2 text-sm font-bold text-[#9E9791] border-b-2 border-transparent hover:text-[#5E5A54] transition-colors";
+                ntBtn.className = "flex-1 py-2 text-sm font-bold text-[#A68C76] border-b-2 border-[#A68C76] transition-colors";
+            }
+            
+            renderBibleDirectory();
+            document.getElementById('dir-chapter-area').classList.add('hidden'); // Hide chapters when switching tabs
+        }
+
+        function renderBibleDirectory() {
+            const list = document.getElementById('dir-book-list');
+            if(!list) return;
+            list.innerHTML = "";
+
+            // Filter books: Type 1=OT, 3=Wisdom(OT), 4=Proverbs(OT); Type 2=NT
+            const books = bibleBooks.filter(b => {
+                if(currentDirectoryTab === 'ot') return b.type !== 2;
+                return b.type === 2;
+            });
+
+            books.forEach(b => {
+                const btn = document.createElement('button');
+                btn.className = "p-2 bg-[#F9F7F5] rounded-lg text-xs text-[#5E5A54] hover:bg-[#A68C76] hover:text-white transition-all text-center truncate";
+                btn.innerText = b.abbr;
+                btn.onclick = () => selectBookInDirectory(b);
+                list.appendChild(btn);
+            });
+        }
+
+        function selectBookInDirectory(book) {
+            const area = document.getElementById('dir-chapter-area');
+            const title = document.getElementById('dir-selected-book');
+            const list = document.getElementById('dir-chapter-list');
+            
+            title.innerText = book.name;
+            list.innerHTML = "";
+            
+            for(let i=1; i<=book.chapters; i++) {
+                const btn = document.createElement('button');
+                btn.className = "aspect-square flex items-center justify-center bg-white border border-[#EBE6DE] rounded-lg text-sm text-[#94908A] hover:border-[#A68C76] hover:text-[#A68C76] transition-all";
+                btn.innerText = i;
+                btn.onclick = () => {
+                    openStandaloneReader(book.code, i, `${book.name} ${i}章`);
+                };
+                list.appendChild(btn);
+            }
+            
+            area.classList.remove('hidden');
+            // Scroll to the specific chapter area instead of bottom
+            setTimeout(() => {
+                area.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }, 50);
         }
 
         // --- NEW JOURNAL UI LOGIC ---
@@ -1254,7 +1428,16 @@
                 if(el) el.value = saved || "";
             });
 
-            // Load Mood - No longer needed as view is removed, but kept for legacy data safety
+            // Load Mood
+            const savedMood = localStorage.getItem(`${dateKey}-note-mood`);
+            const moodBtns = document.querySelectorAll('.mood-btn');
+            moodBtns.forEach(b => b.classList.remove('active'));
+            if(savedMood) {
+                const targetBtn = Array.from(moodBtns).find(b => b.dataset.mood === savedMood);
+                if(targetBtn) targetBtn.classList.add('active');
+            }
+            const savedMoodText = localStorage.getItem(`${dateKey}-mood-text`);
+            if(document.getElementById('mood-text')) document.getElementById('mood-text').value = savedMoodText || "";
         }
 
         function renderPlanButtons(dateKey) {
@@ -1273,6 +1456,7 @@
             const createBtn = (item, isMobile = false) => {
                 const btn = document.createElement('button');
                 if (isMobile) {
+                    // 修改這裡：將 min-w-[70px] 改為 w-[85px] 以統一寬度，並將 px-3 改為 px-1 避免內距過大
                     btn.className = "flex-shrink-0 px-1 py-2 border border-[#D6D0C8] rounded-xl bg-white text-xs hover:bg-[#F2EBE5] hover:border-[#A68C76] transition-colors flex flex-col items-center justify-center gap-1 w-[85px] shadow-sm h-14";
                     btn.innerHTML = `<span class="text-[9px] text-[#B0AAA3] tracking-widest scale-90 origin-bottom">${item.type}</span><span class="font-serif text-[#5E5A54] text-xs font-bold whitespace-nowrap">${item.abbr}</span>`;
                 } else {
@@ -1304,7 +1488,7 @@
                  mobilePlanRow1.appendChild(createBtn(item, true));
             });
 
-            // Row 2: Journals (Updated 'Mood' to 'Future')
+            // Row 2: Journals
             const journals = [
                 { type: '筆記', abbr: '靈修筆記', isNote: true, action: () => showView('note') },
                 { type: '感恩', abbr: '感恩日記', action: () => showView('gratitude') },
@@ -1313,7 +1497,7 @@
             ];
 
             journals.forEach(item => {
-                if (item.type === '筆記') planList.appendChild(createBtn(item)); 
+                if (item.type === '筆記') planList.appendChild(createBtn(item)); // Add Note to sidebar too
                 mobilePlanRow2.appendChild(createBtn(item, true));
             });
         }
@@ -1823,6 +2007,46 @@
                      .then(() => showToast(successMsg))
                      .catch(err => { fallbackCopyTextToClipboard(text, successMsg); });
              } else { fallbackCopyTextToClipboard(text, successMsg); }
+        }
+
+        // 新增：載入靈修小語
+        async function loadDevotionalContent() {
+            try {
+                // 使用 raw.githubusercontent.com 確保跨域存取正常
+                const url = 'https://raw.githubusercontent.com/annelin0321/witty-bible-data/main/devotionals.json';
+                const response = await fetch(url);
+                
+                if (!response.ok) return;
+                const data = await response.json();
+                
+                if (!Array.isArray(data) || data.length === 0) return;
+
+                // 使用今天的日期作為種子，確保當天看到的內容固定
+                const today = new Date();
+                const seed = today.getFullYear() * 10000 + (today.getMonth() + 1) * 100 + today.getDate();
+                const index = seed % data.length;
+                const item = data[index];
+
+                const card = document.getElementById('daily-devotional-card');
+                const titleEl = document.getElementById('devotional-title');
+                const textEl = document.getElementById('devotional-text');
+                const songNameEl = document.getElementById('devotional-song-name');
+                const songLinkEl = document.getElementById('devotional-song-link');
+
+                if(card && titleEl && textEl && songNameEl && songLinkEl) {
+                    titleEl.innerText = item.title || "今日靈糧";
+                    textEl.innerText = item.text || "";
+                    songNameEl.innerText = item.song || "安靜默想";
+                    songLinkEl.href = item.link || "#";
+                    
+                    // 顯示卡片
+                    card.classList.remove('hidden');
+                }
+
+            } catch (e) {
+                console.warn("Devotional content load failed:", e);
+                // 失敗時保持隱藏，不影響主功能
+            }
         }
 
         function initData() {
