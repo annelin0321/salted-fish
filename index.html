@@ -290,11 +290,6 @@
             <h1 class="main-title">機智的鹹魚生活</h1>
             <div class="subtitle">Wise Salted Fish Life</div>
             
-            <!-- 新增：聖經目錄入口按鈕 (絕對定位在右上角) -->
-            <button onclick="showSection('bible-directory')" class="absolute top-6 right-4 p-2 text-[#A68C76] hover:bg-[#F2EBE5] rounded-full transition-colors" title="開啟聖經目錄">
-                <span class="text-xl">📖</span>
-            </button>
-
             <div onclick="showHelpModal()" class="mt-4 inline-block px-4 py-2 bg-[#F9F7F5] border border-[#EBE6DE] rounded-lg cursor-pointer hover:bg-[#F2EBE5] transition-colors shadow-sm group">
                 <p class="text-xs text-[#94908A] group-hover:text-[#A68C76] tracking-widest flex items-center justify-center gap-1 transition-colors">
                     <span class="animate-pulse">⚠️</span> 投資天國穩賺不賠，醃漬前請詳閱 <span class="underline decoration-dotted underline-offset-4 font-bold ml-1">公開說明書 🔗</span>
@@ -361,7 +356,7 @@
             </section>
 
             <!-- 新增：獨立聖經閱讀頁面 (Standalone Reader) -->
-            <section id="bible-reader-standalone" class="section h-full w-full bg-white hidden fixed top-0 left-0 z-[2000] overflow-hidden flex flex-col">
+            <section id="bible-reader-standalone" class="section h-full w-full bg-white fixed top-0 left-0 z-[2000] overflow-hidden flex flex-col hidden">
                 <div class="px-6 py-4 border-b border-[#F5F2EA] flex justify-between items-center bg-white/95 backdrop-blur shrink-0">
                     <h2 id="standalone-reader-title" class="text-lg font-bold font-serif text-[#5E5A54] tracking-wide">--</h2>
                     <!-- 修改：按鈕文字改為「關閉」，並綁定新的關閉函式 -->
@@ -1180,44 +1175,130 @@
         // 移除 getPreservative 函式，因為已經不再使用了
         // function getPreservative() { ... }
 
-        function flipCard() { document.querySelector('.flip-container').classList.toggle('flipped'); if(document.querySelector('.flip-container').classList.contains('flipped')){const q=(onlineFlipQuotes.length?onlineFlipQuotes:quotes)[Math.floor(Math.random()*onlineFlipQuotes.length||quotes.length)]; document.getElementById('quote-content').innerText=q.text; document.getElementById('quote-source').innerText=q.source; document.getElementById('quote-comment').innerHTML=`<strong>主廚祕方：</strong><br>${q.comment.replace(/[()]/g,'').replace('鹹魚主廚的祕方：','')}`; } }
-        function saveCardImage(e) { e.stopPropagation(); showToast('📸 截圖中...'); const temp=document.createElement('div'); temp.style.position='fixed'; temp.style.top='0'; temp.style.zIndex='-9'; temp.style.width='350px'; temp.innerHTML=`<div style="background:#FDFBF7;border:2px solid #7CA1B3;border-radius:24px;padding:40px 30px;text-align:center;font-family:'Noto Sans TC';"><p style="font-family:'Noto Serif TC';font-size:1.4rem;color:#5A524C;margin-bottom:20px;">${document.getElementById('quote-content').innerText}</p><p style="color:#9E9791;margin-bottom:30px;">—— ${document.getElementById('quote-source').innerText}</p><div style="width: 40%; height: 1px; border-top: 1px dashed #D6D0C8; margin: 30px auto;"></div><div style="color:#7CA1B3;font-style:italic;padding-top:15px;">${document.getElementById('quote-comment').innerHTML}</div><div style="margin-top:30px;font-size:0.75rem;color:#D4B483;">機智的鹹魚生活</div></div>`; document.body.appendChild(temp); html2canvas(temp.firstChild,{scale:2,backgroundColor:null}).then(c=>{const a=document.createElement('a');a.download=`salted-fish-${Date.now()}.png`;a.href=c.toDataURL();a.click();document.body.removeChild(temp);showToast('✅ 下載完成');}); }
-        function showSection(id, btn) { 
-            if (id !== 'flip') {
-                const flipper = document.querySelector('.flip-container');
-                if (flipper) flipper.classList.remove('flipped');
+        // --- Helper to find book info from source string ---
+        function findBookFromSource(source) {
+            if (!source) return null;
+            // Clean up source string (remove spaces) for better matching
+            const cleanSource = source.replace(/\s+/g, '');
+            
+            for (let book of bibleBooks) {
+                // Check if starts with full name or abbr
+                if (cleanSource.startsWith(book.name) || cleanSource.startsWith(book.abbr)) {
+                    // Remove book name to isolate chapter number
+                    // e.g. "馬太福音11:28" -> "11:28"
+                    let temp = cleanSource.replace(book.name, '').replace(book.abbr, '');
+                    // Regex to capture the first number (chapter)
+                    let match = temp.match(/^(\d+)/);
+                    if (match) {
+                        return { 
+                            code: book.code, 
+                            chapter: parseInt(match[1]), 
+                            title: `${book.name} ${match[1]}章` // Friendly title for reader
+                        };
+                    }
+                }
             }
+            return null;
+        }
 
-            // --- 移除重置首頁 Preservative 的邏輯，因為元素已移除 ---
-            /*
-            if (id !== 'home') {
-                 const preservativeDisplay = document.getElementById('preservative-display');
-                 if (preservativeDisplay) {
-                     preservativeDisplay.style.opacity = 0;
-                     setTimeout(() => { if(preservativeDisplay) preservativeDisplay.innerText = ''; }, 500);
-                 }
-            }
-            */
+        function flipCard() { 
+            const container = document.querySelector('.flip-container');
+            container.classList.toggle('flipped'); 
+            const readBtn = document.getElementById('read-chapter-btn');
+            
+            if(container.classList.contains('flipped')){
+                const q=(onlineFlipQuotes.length?onlineFlipQuotes:quotes)[Math.floor(Math.random()*onlineFlipQuotes.length||quotes.length)]; 
+                document.getElementById('quote-content').innerText=q.text; 
+                document.getElementById('quote-source').innerText=q.source; 
+                document.getElementById('quote-comment').innerHTML=`<strong>主廚祕方：</strong><br>${q.comment.replace(/[()]/g,'').replace('鹹魚主廚的祕方：','')}`; 
 
-            // --- 重置 聰明鹹魚 (PUA) ---
-            if (id !== 'pua') {
-                currentPuaSelection = null;
-                document.querySelectorAll('.pua-tag').forEach(t => t.classList.remove('selected'));
-                const puaRes = document.getElementById('pua-result');
-                if (puaRes) puaRes.style.opacity = 0;
+                // --- New Logic: Show Read Button if source is valid ---
+                const ref = findBookFromSource(q.source);
                 
-                const testArea = document.getElementById('pua-test-area');
-                if (testArea) testArea.style.display = 'none';
-                const testRes = document.getElementById('test-result');
-                if (testRes) testRes.style.display = 'none';
+                if (ref && readBtn) {
+                    readBtn.classList.remove('hidden');
+                    readBtn.onclick = (e) => {
+                        // Use openStandaloneReader instead of goToScripture
+                        openStandaloneReader(ref.code, ref.chapter, ref.title);
+                    };
+                } else if (readBtn) {
+                    readBtn.classList.add('hidden');
+                }
+            } else {
+                // 當卡片翻回正面時，隱藏外部按鈕
+                if (readBtn) readBtn.classList.add('hidden');
+            }
+        }
+
+        // Renamed and updated from goToScripture to use standalone reader
+        async function openStandaloneReader(code, chapter, title) {
+            // 新增：記錄當前所在的頁面 ID
+            const activeSection = document.querySelector('.section.active');
+            if (activeSection && activeSection.id !== 'bible-reader-standalone') {
+                readerPreviousSection = activeSection.id;
             }
 
-            // --- 重置 游刃有魚 (Shield) ---
-            if (id !== 'shield') {
-                currentShieldSelection = null;
-                document.querySelectorAll('.shield-tag').forEach(t => t.classList.remove('selected'));
-                const shieldRes = document.getElementById('shield-result');
-                if (shieldRes) shieldRes.style.opacity = 0;
+            showSection('bible-reader-standalone'); // This hides others and shows this one
+            
+            const titleEl = document.getElementById('standalone-reader-title');
+            const contentEl = document.getElementById('standalone-reader-content');
+            
+            if(titleEl) titleEl.innerText = title;
+            if(contentEl) contentEl.innerHTML = '<div class="h-full flex flex-col items-center justify-center gap-4"><span class="loader"></span><span class="text-xs text-[#94908A] tracking-widest animate-pulse font-serif">讀取中...</span></div>';
+
+            try {
+                // Fetch logic (same API)
+                const res = await fetch(`https://bolls.life/get-text/CUNP/${code}/${chapter}/`);
+                const data = await res.json();
+                
+                let html = "";
+                data.forEach(v => {
+                    const text = stripHtml(v.text);
+                     html += `
+                        <div class="mb-4">
+                            <span class="text-xs text-[#D6D0C8] font-mono mr-1 select-none">${v.verse}</span>
+                            <span>${text}</span>
+                        </div>
+                    `;
+                });
+                if(contentEl) contentEl.innerHTML = `<div class="max-w-3xl mx-auto">${html}</div>`;
+            } catch (e) {
+                if(contentEl) contentEl.innerHTML = '<div class="text-center text-[#94908A] py-10">讀取失敗，請檢查網路。</div>';
+            }
+        }
+
+        // 新增：關閉閱讀器並返回上一頁
+        function closeStandaloneReader() {
+            showSection(readerPreviousSection);
+        }
+
+        function saveCardImage(e) { e.stopPropagation(); showToast('📸 截圖中...'); const temp=document.createElement('div'); temp.style.position='fixed'; temp.style.top='0'; temp.style.zIndex='-9'; temp.style.width='350px'; temp.innerHTML=`<div style="background:#FDFBF7;border:2px solid #7CA1B3;border-radius:24px;padding:40px 30px;text-align:center;font-family:'Noto Sans TC';"><p style="font-family:'Noto Serif TC';font-size:1.4rem;color:#5A524C;margin-bottom:20px;">${document.getElementById('quote-content').innerText}</p><p style="color:#9E9791;margin-bottom:30px;">—— ${document.getElementById('quote-source').innerText}</p><div style="width: 40%; height: 1px; border-top: 1px dashed #D6D0C8; margin: 30px auto;"></div><div style="color:#7CA1B3;font-style:italic;padding-top:15px;">${document.getElementById('quote-comment').innerHTML}</div><div style="margin-top:30px;font-size:0.75rem;color:#D4B483;">機智的鹹魚生活</div></div>`; document.body.appendChild(temp); html2canvas(temp.firstChild,{scale:2,backgroundColor:null}).then(c=>{const a=document.createElement('a');a.download=`salted-fish-${Date.now()}.png`;a.href=c.toDataURL();a.click();document.body.removeChild(temp);showToast('✅ 下載完成');}); }
+        
+        function showSection(id, btn) { 
+            // --- Reset Flip Card Logic ---
+            const flipper = document.querySelector('.flip-container');
+            const readBtn = document.getElementById('read-chapter-btn');
+            
+            // 如果不是要去閱讀器，也不是從閱讀器返回且原本是翻轉頁，則重置卡片
+            const isGoingToReader = (id === 'bible-reader-standalone');
+            // 我們需要判斷是否是從閱讀器返回的動作
+            // 最簡單的方式：如果目標 ID 是 'flip'，且我們來自 'bible-reader-standalone'
+            const currentActive = document.querySelector('.section.active');
+            const isReturningFromReaderToFlip = (id === 'flip' && currentActive && currentActive.id === 'bible-reader-standalone');
+
+            if (flipper) {
+                 if (id !== 'flip' && !isGoingToReader) {
+                     // 離開翻轉頁去別的地方（如首頁），重置
+                     flipper.classList.remove('flipped');
+                     if (readBtn) readBtn.classList.add('hidden');
+                 } else if (id === 'flip' && !isReturningFromReaderToFlip) {
+                     // 回到翻轉頁，但不是從閱讀器回來的（例如點擊下方導覽列），重置
+                     // 這裡其實有點微妙，如果使用者在翻轉頁點擊下方「翻身」按鈕，通常期望重置或保持。
+                     // 為了體驗一致性，如果不是從閱讀器回來，我們假設是重新進入，所以重置。
+                     flipper.classList.remove('flipped');
+                     if (readBtn) readBtn.classList.add('hidden');
+                 }
+                 // 如果是 isReturningFromReaderToFlip，則什麼都不做，保持翻轉狀態
             }
             
             // --- Reset Bible Directory if leaving ---
