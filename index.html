@@ -642,15 +642,15 @@
                                 <div style="width: 40%; height: 1px; border-top: 1px dashed #D6D0C8; margin: 30px auto;"></div>
                                 <p id="quote-comment"> </p>
                                 
-                                <!-- 新增：閱讀完整章節按鈕 -->
-                                <button id="read-chapter-btn" class="hidden mt-4 mb-2 text-xs font-bold text-[#A68C76] bg-[#FDFBF7] border border-[#EBE6DE] px-4 py-2 rounded-full hover:bg-[#A68C76] hover:text-white transition-all shadow-sm flex items-center gap-2 mx-auto">
-                                    <span>📖</span> 閱讀完整章節
-                                </button>
-
-                                <button class="btn-icon" onclick="saveCardImage(event)" style="margin-top:15px; font-weight:bold;">📸 拍立得打包 (存圖)</button>
+                                <button class="btn-icon" onclick="saveCardImage(event)" style="margin-top:auto; font-weight:bold;">📸 拍立得打包 (存圖)</button>
                             </div>
                         </div>
                     </div>
+                    
+                    <!-- 修改：將按鈕移至 flip-container 外部，避免擠壓卡片內容 -->
+                    <button id="read-chapter-btn" class="hidden w-full mt-6 py-3 text-sm font-bold text-[#A68C76] bg-[#FDFBF7] border border-[#EBE6DE] rounded-xl hover:bg-[#A68C76] hover:text-white transition-all shadow-sm flex items-center justify-center gap-2">
+                        <span>📖</span> 閱讀完整章節
+                    </button>
                 </div>
             </section>
 
@@ -1201,6 +1201,7 @@
         function flipCard() { 
             const container = document.querySelector('.flip-container');
             container.classList.toggle('flipped'); 
+            const readBtn = document.getElementById('read-chapter-btn');
             
             if(container.classList.contains('flipped')){
                 const q=(onlineFlipQuotes.length?onlineFlipQuotes:quotes)[Math.floor(Math.random()*onlineFlipQuotes.length||quotes.length)]; 
@@ -1210,19 +1211,20 @@
 
                 // --- New Logic: Show Read Button if source is valid ---
                 const ref = findBookFromSource(q.source);
-                const readBtn = document.getElementById('read-chapter-btn');
                 
                 if (ref && readBtn) {
                     readBtn.classList.remove('hidden');
                     readBtn.onclick = (e) => {
-                        e.stopPropagation(); // Prevent card flip
                         // Use openStandaloneReader instead of goToScripture
                         openStandaloneReader(ref.code, ref.chapter, ref.title);
                     };
                 } else if (readBtn) {
                     readBtn.classList.add('hidden');
                 }
-            } 
+            } else {
+                // 當卡片翻回正面時，隱藏外部按鈕
+                if (readBtn) readBtn.classList.add('hidden');
+            }
         }
 
         // Renamed and updated from goToScripture to use standalone reader
