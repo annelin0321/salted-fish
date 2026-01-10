@@ -360,8 +360,9 @@
             <section id="bible-reader-standalone" class="section h-full w-full bg-white hidden fixed top-0 left-0 z-[2000] overflow-hidden flex flex-col">
                 <div class="px-6 py-4 border-b border-[#F5F2EA] flex justify-between items-center bg-white/95 backdrop-blur shrink-0">
                     <h2 id="standalone-reader-title" class="text-lg font-bold font-serif text-[#5E5A54] tracking-wide">--</h2>
-                    <button onclick="showSection('bible-directory')" class="p-2 bg-[#F9F7F5] rounded-full text-[#94908A] hover:bg-[#EBE6DE] hover:text-[#5E5A54] transition-colors text-xs font-bold px-4">
-                        返回目錄 ✕
+                    <!-- 修改：按鈕文字改為「關閉」，並綁定新的關閉函式 -->
+                    <button onclick="closeStandaloneReader()" class="p-2 bg-[#F9F7F5] rounded-full text-[#94908A] hover:bg-[#EBE6DE] hover:text-[#5E5A54] transition-colors text-xs font-bold px-4">
+                        關閉 ✕
                     </button>
                 </div>
                 <div id="standalone-reader-content" class="flex-1 overflow-y-auto p-6 md:p-10 bible-text text-[#5E5A54] text-lg leading-loose journal-scroll pb-20">
@@ -973,6 +974,7 @@
         let selectedVerses = new Set(); // Store indices or IDs of selected verses
         let onlinePuaChecklist = []; // 線上題庫
         let currentDirectoryTab = 'ot'; // 'ot' or 'nt'
+        let readerPreviousSection = 'home'; // 新增：記錄閱讀前的頁面
 
         // --- Helper Functions ---
         function stripHtml(html) {
@@ -1229,6 +1231,12 @@
 
         // Renamed and updated from goToScripture to use standalone reader
         async function openStandaloneReader(code, chapter, title) {
+            // 新增：記錄當前所在的頁面 ID
+            const activeSection = document.querySelector('.section.active');
+            if (activeSection) {
+                readerPreviousSection = activeSection.id;
+            }
+
             showSection('bible-reader-standalone'); // This hides others and shows this one
             
             const titleEl = document.getElementById('standalone-reader-title');
@@ -1258,12 +1266,27 @@
             }
         }
 
+        // 新增：關閉閱讀器並返回上一頁
+        function closeStandaloneReader() {
+            showSection(readerPreviousSection);
+        }
+
         function saveCardImage(e) { e.stopPropagation(); showToast('📸 截圖中...'); const temp=document.createElement('div'); temp.style.position='fixed'; temp.style.top='0'; temp.style.zIndex='-9'; temp.style.width='350px'; temp.innerHTML=`<div style="background:#FDFBF7;border:2px solid #7CA1B3;border-radius:24px;padding:40px 30px;text-align:center;font-family:'Noto Sans TC';"><p style="font-family:'Noto Serif TC';font-size:1.4rem;color:#5A524C;margin-bottom:20px;">${document.getElementById('quote-content').innerText}</p><p style="color:#9E9791;margin-bottom:30px;">—— ${document.getElementById('quote-source').innerText}</p><div style="width: 40%; height: 1px; border-top: 1px dashed #D6D0C8; margin: 30px auto;"></div><div style="color:#7CA1B3;font-style:italic;padding-top:15px;">${document.getElementById('quote-comment').innerHTML}</div><div style="margin-top:30px;font-size:0.75rem;color:#D4B483;">機智的鹹魚生活</div></div>`; document.body.appendChild(temp); html2canvas(temp.firstChild,{scale:2,backgroundColor:null}).then(c=>{const a=document.createElement('a');a.download=`salted-fish-${Date.now()}.png`;a.href=c.toDataURL();a.click();document.body.removeChild(temp);showToast('✅ 下載完成');}); }
         
         function showSection(id, btn) { 
             if (id !== 'flip') {
                 const flipper = document.querySelector('.flip-container');
-                if (flipper) flipper.classList.remove('flipped');
+                // 修改：如果目標是閱讀器，或者從閱讀器返回且目標是翻轉頁，則不重置卡片狀態
+                const isGoingToReader = (id === 'bible-reader-standalone');
+                const isReturningToFlip = (id === 'flip' && readerPreviousSection === 'flip');
+                
+                // 只有在「不是去閱讀器」且「不是回到翻轉頁」的情況下，才重置卡片
+                if (flipper && !isGoingToReader && !isReturningToFlip) {
+                    flipper.classList.remove('flipped');
+                    // 同時隱藏外部按鈕
+                    const readBtn = document.getElementById('read-chapter-btn');
+                    if (readBtn) readBtn.classList.add('hidden');
+                }
             }
 
             // --- 重置 首頁 (Preservative) ---
