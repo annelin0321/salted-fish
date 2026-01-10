@@ -323,10 +323,14 @@
                     </div>
                     <h2 id="daily-status-title">鹹魚鹽度探測中...</h2>
                     <p id="daily-status-desc" class="text-muted" style="margin-bottom: 15px;">請保持呼吸，正在計算你與天國的距離...</p>
+                    
+                    <!-- 修改：按鈕直接連結至聖經目錄，並移除下方的顯示區塊 -->
                     <div style="margin-bottom: 20px;">
-                        <button class="preservative-btn" onclick="getPreservative()">⚠️ 領取屬靈防腐劑 (急救用)</button>
-                        <div id="preservative-display" class="preservative-box"></div>
+                        <button class="preservative-btn" onclick="showSection('bible-directory')" style="width: 100%; justify-content: center; padding: 12px;">
+                            📖 開啟屬靈急救箱 (聖經)
+                        </button>
                     </div>
+
                     <div class="bible-plan-panel">
                         <h3 style="font-family:'Noto Serif TC'; font-size:1.1rem; margin-bottom:5px;">鹹魚醃漬中</h3>
                         <p class="panel-desc">「立志做一條用聖經醃漬的鹹魚！每天撒點鹽（讀經），生活會更香喔。」</p>
@@ -1172,124 +1176,20 @@
             
             updateHomeStatus();
         }
-        function getPreservative() { const d=document.getElementById('preservative-display'); d.style.opacity=0; const pool=onlinePreservativePool.length?onlinePreservativePool:preservativePool; const msg=pool[Math.floor(Math.random()*pool.length)].content; setTimeout(()=>{d.innerText=`「${msg}」`;d.style.opacity=1;},200); }
         
-        // --- Helper to find book info from source string ---
-        function findBookFromSource(source) {
-            if (!source) return null;
-            // Clean up source string (remove spaces) for better matching
-            const cleanSource = source.replace(/\s+/g, '');
-            
-            for (let book of bibleBooks) {
-                // Check if starts with full name or abbr
-                if (cleanSource.startsWith(book.name) || cleanSource.startsWith(book.abbr)) {
-                    // Remove book name to isolate chapter number
-                    // e.g. "馬太福音11:28" -> "11:28"
-                    let temp = cleanSource.replace(book.name, '').replace(book.abbr, '');
-                    // Regex to capture the first number (chapter)
-                    let match = temp.match(/^(\d+)/);
-                    if (match) {
-                        return { 
-                            code: book.code, 
-                            chapter: parseInt(match[1]), 
-                            title: `${book.name} ${match[1]}章` // Friendly title for reader
-                        };
-                    }
-                }
-            }
-            return null;
-        }
+        // 移除 getPreservative 函式，因為已經不再使用了
+        // function getPreservative() { ... }
 
-        function flipCard() { 
-            const container = document.querySelector('.flip-container');
-            container.classList.toggle('flipped'); 
-            const readBtn = document.getElementById('read-chapter-btn');
-            
-            if(container.classList.contains('flipped')){
-                const q=(onlineFlipQuotes.length?onlineFlipQuotes:quotes)[Math.floor(Math.random()*onlineFlipQuotes.length||quotes.length)]; 
-                document.getElementById('quote-content').innerText=q.text; 
-                document.getElementById('quote-source').innerText=q.source; 
-                document.getElementById('quote-comment').innerHTML=`<strong>主廚祕方：</strong><br>${q.comment.replace(/[()]/g,'').replace('鹹魚主廚的祕方：','')}`; 
-
-                // --- New Logic: Show Read Button if source is valid ---
-                const ref = findBookFromSource(q.source);
-                
-                if (ref && readBtn) {
-                    readBtn.classList.remove('hidden');
-                    readBtn.onclick = (e) => {
-                        // Use openStandaloneReader instead of goToScripture
-                        openStandaloneReader(ref.code, ref.chapter, ref.title);
-                    };
-                } else if (readBtn) {
-                    readBtn.classList.add('hidden');
-                }
-            } else {
-                // 當卡片翻回正面時，隱藏外部按鈕
-                if (readBtn) readBtn.classList.add('hidden');
-            }
-        }
-
-        // Renamed and updated from goToScripture to use standalone reader
-        async function openStandaloneReader(code, chapter, title) {
-            // 新增：記錄當前所在的頁面 ID
-            const activeSection = document.querySelector('.section.active');
-            if (activeSection) {
-                readerPreviousSection = activeSection.id;
-            }
-
-            showSection('bible-reader-standalone'); // This hides others and shows this one
-            
-            const titleEl = document.getElementById('standalone-reader-title');
-            const contentEl = document.getElementById('standalone-reader-content');
-            
-            if(titleEl) titleEl.innerText = title;
-            if(contentEl) contentEl.innerHTML = '<div class="h-full flex flex-col items-center justify-center gap-4"><span class="loader"></span><span class="text-xs text-[#94908A] tracking-widest animate-pulse font-serif">讀取中...</span></div>';
-
-            try {
-                // Fetch logic (same API)
-                const res = await fetch(`https://bolls.life/get-text/CUNP/${code}/${chapter}/`);
-                const data = await res.json();
-                
-                let html = "";
-                data.forEach(v => {
-                    const text = stripHtml(v.text);
-                     html += `
-                        <div class="mb-4">
-                            <span class="text-xs text-[#D6D0C8] font-mono mr-1 select-none">${v.verse}</span>
-                            <span>${text}</span>
-                        </div>
-                    `;
-                });
-                if(contentEl) contentEl.innerHTML = `<div class="max-w-3xl mx-auto">${html}</div>`;
-            } catch (e) {
-                if(contentEl) contentEl.innerHTML = '<div class="text-center text-[#94908A] py-10">讀取失敗，請檢查網路。</div>';
-            }
-        }
-
-        // 新增：關閉閱讀器並返回上一頁
-        function closeStandaloneReader() {
-            showSection(readerPreviousSection);
-        }
-
+        function flipCard() { document.querySelector('.flip-container').classList.toggle('flipped'); if(document.querySelector('.flip-container').classList.contains('flipped')){const q=(onlineFlipQuotes.length?onlineFlipQuotes:quotes)[Math.floor(Math.random()*onlineFlipQuotes.length||quotes.length)]; document.getElementById('quote-content').innerText=q.text; document.getElementById('quote-source').innerText=q.source; document.getElementById('quote-comment').innerHTML=`<strong>主廚祕方：</strong><br>${q.comment.replace(/[()]/g,'').replace('鹹魚主廚的祕方：','')}`; } }
         function saveCardImage(e) { e.stopPropagation(); showToast('📸 截圖中...'); const temp=document.createElement('div'); temp.style.position='fixed'; temp.style.top='0'; temp.style.zIndex='-9'; temp.style.width='350px'; temp.innerHTML=`<div style="background:#FDFBF7;border:2px solid #7CA1B3;border-radius:24px;padding:40px 30px;text-align:center;font-family:'Noto Sans TC';"><p style="font-family:'Noto Serif TC';font-size:1.4rem;color:#5A524C;margin-bottom:20px;">${document.getElementById('quote-content').innerText}</p><p style="color:#9E9791;margin-bottom:30px;">—— ${document.getElementById('quote-source').innerText}</p><div style="width: 40%; height: 1px; border-top: 1px dashed #D6D0C8; margin: 30px auto;"></div><div style="color:#7CA1B3;font-style:italic;padding-top:15px;">${document.getElementById('quote-comment').innerHTML}</div><div style="margin-top:30px;font-size:0.75rem;color:#D4B483;">機智的鹹魚生活</div></div>`; document.body.appendChild(temp); html2canvas(temp.firstChild,{scale:2,backgroundColor:null}).then(c=>{const a=document.createElement('a');a.download=`salted-fish-${Date.now()}.png`;a.href=c.toDataURL();a.click();document.body.removeChild(temp);showToast('✅ 下載完成');}); }
-        
         function showSection(id, btn) { 
             if (id !== 'flip') {
                 const flipper = document.querySelector('.flip-container');
-                // 修改：如果目標是閱讀器，或者從閱讀器返回且目標是翻轉頁，則不重置卡片狀態
-                const isGoingToReader = (id === 'bible-reader-standalone');
-                const isReturningToFlip = (id === 'flip' && readerPreviousSection === 'flip');
-                
-                // 只有在「不是去閱讀器」且「不是回到翻轉頁」的情況下，才重置卡片
-                if (flipper && !isGoingToReader && !isReturningToFlip) {
-                    flipper.classList.remove('flipped');
-                    // 同時隱藏外部按鈕
-                    const readBtn = document.getElementById('read-chapter-btn');
-                    if (readBtn) readBtn.classList.add('hidden');
-                }
+                if (flipper) flipper.classList.remove('flipped');
             }
 
-            // --- 重置 首頁 (Preservative) ---
+            // --- 移除重置首頁 Preservative 的邏輯，因為元素已移除 ---
+            /*
             if (id !== 'home') {
                  const preservativeDisplay = document.getElementById('preservative-display');
                  if (preservativeDisplay) {
@@ -1297,6 +1197,7 @@
                      setTimeout(() => { if(preservativeDisplay) preservativeDisplay.innerText = ''; }, 500);
                  }
             }
+            */
 
             // --- 重置 聰明鹹魚 (PUA) ---
             if (id !== 'pua') {
