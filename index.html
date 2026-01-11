@@ -941,6 +941,7 @@
         // 修改為由 JSON 載入的變數
         let puaData = []; 
         let onlinePuaChecklist = []; 
+        let onlineShieldData = [];
 
         const emotionCategories = {
             pos: ["喜樂", "感恩", "平安", "興奮", "滿足", "被愛", "期待", "釋放", "勇敢", "自信", "輕鬆", "愉悅", "受尊榮", "親密", "充滿希望", "被接納", "寧靜", "寬恕", "自由", "活潑", "被理解", "受感動"],
@@ -1113,7 +1114,49 @@
         async function loadSaltStatusMap() { const d = await fetchAndParseCSV('138033526'); if(d){ onlineSaltStatusMap=[]; d.rows.forEach(l=>{const c=d.parser(l);onlineSaltStatusMap.push({min:parseInt(c[d.headers.indexOf('min_percent')]),max:parseInt(c[d.headers.indexOf('max_percent')]),title:c[d.headers.indexOf('status_title')],desc:c[d.headers.indexOf('status_desc')]})}); } }
         async function loadPreservativePool() { const d=await fetchAndParseCSV('159897993'); if(d){ let idx={min:d.headers.findIndex(h=>h.includes('min'))||0,max:d.headers.findIndex(h=>h.includes('max'))||1,c:d.headers.findIndex(h=>h.includes('content'))||2}; onlinePreservativePool=[]; d.rows.forEach(l=>{const c=d.parser(l);onlinePreservativePool.push({tMin:parseInt(c[idx.min]),tMax:parseInt(c[idx.max]),content:c[idx.c]})}); } }
         async function loadFlipQuotes() { const d=await fetchAndParseCSV('1402400724'); if(d){ let idx={c:d.headers.findIndex(h=>h.includes('content'))||0,s:d.headers.findIndex(h=>h.includes('source'))||1,cm:d.headers.findIndex(h=>h.includes('comment'))||2}; onlineFlipQuotes=[]; d.rows.forEach(l=>{const c=d.parser(l);if(c[idx.c])onlineFlipQuotes.push({text:c[idx.c],source:c[idx.s]||"",comment:c[idx.cm]||""})}); } }
-        async function loadShieldData() { const d=await fetchAndParseCSV('1087555591'); if(!d){renderShieldTags();return;} let idx={l:d.headers.findIndex(h=>h.includes('label'))||0,o:d.headers.findIndex(h=>h.includes('options'))||1}; onlineShieldData=[]; d.rows.forEach(l=>{const c=d.parser(l);if(c[idx.l])onlineShieldData.push({label:c[idx.l],options:c[idx.o].split(/[|\n]/)})}); renderShieldTags(); }
+        
+        // 修改：游刃有魚 - 載入 Social Defense JSON
+        async function loadShieldData() {
+            const titleEl = document.querySelector('#shield h2');
+            const container = document.getElementById('shield-tag-container');
+            const url = 'https://raw.githubusercontent.com/annelin0321/witty-bible-data/main/social_defense.json';
+            
+            try {
+                const response = await fetch(`${url}?t=${new Date().getTime()}`);
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                
+                const data = await response.json();
+                if (!Array.isArray(data)) throw new Error("Format Err");
+                
+                onlineShieldData = data.map(item => ({
+                    label: item.label || item.question || item.tag || "未命名情境",
+                    options: Array.isArray(item.options) ? item.options : 
+                             (item.answers ? item.answers : 
+                             (item.replies ? item.replies : ["(無回應)"]))
+                }));
+
+                console.log("Shield Data Loaded:", onlineShieldData.length);
+                renderShieldTags();
+
+                if (titleEl) {
+                     titleEl.innerHTML = `游刃有魚 <span class="text-[10px] text-gray-400 bg-gray-50 px-2 py-0.5 rounded-full border border-gray-100 ml-2 font-normal align-middle">線上版</span>`;
+                }
+                
+            } catch (e) {
+                console.warn("Shield Data Load Failed:", e);
+                if (titleEl) {
+                     titleEl.innerHTML = `游刃有魚 <span class="text-[10px] text-gray-400 bg-gray-50 px-2 py-0.5 rounded-full border border-gray-100 ml-2 font-normal align-middle">離線版</span>`;
+                }
+                
+                // Fallback using existing 'shields' object defined in global scope
+                // Map 'shields' object to array format expected by renderShieldTags
+                onlineShieldData = Object.keys(shields).map(k => ({
+                    label: k==='marriage'?'什麼時候結婚?':k==='salary'?'薪水多少?':'沒來服事?', 
+                    options: shields[k]
+                }));
+                renderShieldTags();
+            }
+        }
         
         // 新增：載入 PUA 金句典 JSON (直接連線版)
         async function loadPuaDictionary() {
@@ -1892,6 +1935,162 @@
                 document.getElementById('devotional-song-link').href = item.link || "#";
                 document.getElementById('daily-devotional-card').classList.remove('hidden');
             } catch (e) {}
+        }
+
+        async function loadFlipQuotes() { const d=await fetchAndParseCSV('1402400724'); if(d){ let idx={c:d.headers.findIndex(h=>h.includes('content'))||0,s:d.headers.findIndex(h=>h.includes('source'))||1,cm:d.headers.findIndex(h=>h.includes('comment'))||2}; onlineFlipQuotes=[]; d.rows.forEach(l=>{const c=d.parser(l);if(c[idx.c])onlineFlipQuotes.push({text:c[idx.c],source:c[idx.s]||"",comment:c[idx.cm]||""})}); } }
+        
+        // 修改：游刃有魚 - 載入 Social Defense JSON
+        async function loadShieldData() {
+            const titleEl = document.querySelector('#shield h2');
+            const container = document.getElementById('shield-tag-container');
+            const url = 'https://raw.githubusercontent.com/annelin0321/witty-bible-data/main/social_defense.json';
+            
+            try {
+                const response = await fetch(`${url}?t=${new Date().getTime()}`);
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                
+                const data = await response.json();
+                if (!Array.isArray(data)) throw new Error("Format Err");
+                
+                onlineShieldData = data.map(item => ({
+                    label: item.label || item.question || item.tag || "未命名情境",
+                    options: Array.isArray(item.options) ? item.options : 
+                             (item.answers ? item.answers : 
+                             (item.replies ? item.replies : ["(無回應)"]))
+                }));
+
+                console.log("Shield Data Loaded:", onlineShieldData.length);
+                renderShieldTags();
+
+                if (titleEl) {
+                     titleEl.innerHTML = `游刃有魚 <span class="text-[10px] text-gray-400 bg-gray-50 px-2 py-0.5 rounded-full border border-gray-100 ml-2 font-normal align-middle">線上版</span>`;
+                }
+                
+            } catch (e) {
+                console.warn("Shield Data Load Failed:", e);
+                if (titleEl) {
+                     titleEl.innerHTML = `游刃有魚 <span class="text-[10px] text-gray-400 bg-gray-50 px-2 py-0.5 rounded-full border border-gray-100 ml-2 font-normal align-middle">離線版</span>`;
+                }
+                
+                // Fallback using existing 'shields' object defined in global scope
+                // Map 'shields' object to array format expected by renderShieldTags
+                onlineShieldData = Object.keys(shields).map(k => ({
+                    label: k==='marriage'?'什麼時候結婚?':k==='salary'?'薪水多少?':'沒來服事?', 
+                    options: shields[k]
+                }));
+                renderShieldTags();
+            }
+        }
+        
+        // 新增：載入 PUA 金句典 JSON (直接連線版)
+        async function loadPuaDictionary() {
+            const container = document.getElementById('pua-tag-container');
+            const titleEl = document.querySelector('#pua h2'); // Target the H2
+            const url = 'https://raw.githubusercontent.com/annelin0321/witty-bible-data/main/PUA_Dictionary.json';
+            
+            try {
+                const response = await fetch(`${url}?t=${new Date().getTime()}`);
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                const text = await response.text();
+                let data = JSON.parse(text); 
+                if (!Array.isArray(data)) throw new Error("Format Err: Not Array");
+
+                puaData = data.map(item => ({
+                    sentence: item.quote,
+                    trans: item.translation,
+                    defenses: Array.isArray(item.defenses) ? item.defenses : (item.defenses ? [item.defenses] : ["(保持微笑)"]),
+                    level: "⭐".repeat(item.level || 1)
+                }));
+                
+                console.log("PUA Dictionary Loaded:", puaData.length);
+                renderPuaTags();
+                
+                // Update Title UI - Success (Gray, Small)
+                if (titleEl) {
+                    titleEl.innerHTML = `聰明鹹魚 <span class="text-[10px] text-gray-400 bg-gray-50 px-2 py-0.5 rounded-full border border-gray-100 ml-2 font-normal align-middle">線上版</span>`;
+                }
+                
+                // Remove error msg if any
+                if(container && container.previousElementSibling && container.previousElementSibling.className.includes('text-red-400')) {
+                    container.previousElementSibling.remove();
+                }
+
+            } catch (e) {
+                console.warn("PUA Load Failed (Using Offline Backup):", e);
+                
+                // Update Title UI - Fail (Gray, Small)
+                if (titleEl) {
+                    titleEl.innerHTML = `聰明鹹魚 <span class="text-[10px] text-gray-400 bg-gray-50 px-2 py-0.5 rounded-full border border-gray-100 ml-2 font-normal align-middle">離線版</span>`;
+                }
+
+                if(container) {
+                    if (!container.parentNode.querySelector('.offline-warning')) {
+                       // Suppress extra warning for minimal UI as requested
+                    }
+                }
+                
+                puaData = [
+                    { sentence: "你不順服就是不蒙福", trans: "聽我的話，不然你會倒楣 (恐懼操弄)", defenses: ["福氣是神給的，不是人給的。", "我在順服神，這比較重要。", "蒙福的前提是真理，不是盲從。"], level: "⭐⭐⭐" },
+                    { sentence: "這是在訓練你的信心", trans: "這是不合理的苦差事，但我不想承認", defenses: ["信心是在安息中建立的，不是過勞中。", "神比較想訓練我的界線。", "我的信心已經夠大了，現在需要的是休息。"], level: "⭐⭐" },
+                    { sentence: "不可觸摸受膏者", trans: "我是特權階級，你不能質疑我", defenses: ["真理越辯越明。", "我們都是君尊的祭司，地位平等。", "連保羅都接受檢驗，何況是你？"], level: "⭐⭐⭐⭐⭐" },
+                    { sentence: "要為主擺上", trans: "請免費加班", defenses: ["我的身體也是神的殿，需要保養。", "擺上不是被榨乾。", "神喜悅甘心樂意，不是勉強。"], level: "⭐⭐⭐" },
+                    { sentence: "離開這間教會就沒遮蓋了", trans: "我在恐嚇你不敢離開", defenses: ["耶和華是我的遮蓋。", "教會是家，不是監獄。", "神的同在不被建築物限制。"], level: "⭐⭐⭐⭐" },
+                    { sentence: "這是魔鬼的攻擊", trans: "我不接受任何負面回饋", defenses: ["有時候不是魔鬼，只是常識。", "我們需要面對現實，解決問題。", "魔鬼沒那麼閒，這可能是管理問題。"], level: "⭐⭐" },
+                    { sentence: "要有國度觀", trans: "把資源都給我用", defenses: ["我的國度觀包含公義與合理。", "神也看重個人的需要。", "國度是由一個個健康的個體組成的。"], level: "⭐⭐" },
+                    { sentence: "你的感動不準，要聽我的", trans: "我想要控制你的決定", defenses: ["聖靈也會親自對我說話。", "我們一起禱告查驗，不是單方面聽令。", "我有責任為自己的人生負責。"], level: "⭐⭐⭐⭐" },
+                    { sentence: "這是在破碎你的老我", trans: "我要摧毀你的自尊，讓你變聽話", defenses: ["神破碎是為了重建，不是為了羞辱。", "健康的自我價值是神所賜的。", "這種破碎法只會產生傷口，不會產生生命。"], level: "⭐⭐⭐" },
+                    { sentence: "不要問為什麼，做就對了", trans: "我懶得解釋，或者禁不起推敲", defenses: ["神是講理的神，信仰需要理性。", "明白意義才能全心投入。", "盲從不是聖經教導的順服。"], level: "⭐⭐⭐" }
+                ];
+                renderPuaTags();
+            }
+        }
+
+        // 修改：載入 PUA 快篩 JSON (直接連線版)
+        async function loadPuaChecklist() {
+            const url = 'https://raw.githubusercontent.com/annelin0321/witty-bible-data/main/PUA_Checklist.json';
+            const titleEl = document.querySelector('#pua-test-area span'); // 取得標題元素
+            
+            try {
+                const response = await fetch(`${url}?t=${new Date().getTime()}`);
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                const text = await response.text();
+                let data = JSON.parse(text);
+                if (!Array.isArray(data)) throw new Error("Format Err");
+
+                onlinePuaChecklist = data.map(item => ({
+                    text: item.question,
+                    weight: item.weight || 1
+                }));
+                
+                console.log("PUA Checklist Loaded:", onlinePuaChecklist.length);
+                
+                // 更新 UI 標題顯示狀態 (Gray style for consistency)
+                if(titleEl) {
+                    titleEl.innerHTML = `環境 PUA 毒性檢測 <span class="text-[10px] text-gray-400 bg-gray-50 px-2 py-0.5 rounded-full border border-gray-100 ml-2 font-normal align-middle">線上版</span>`;
+                }
+
+                const area = document.getElementById('pua-test-area');
+                if(area && area.style.display === 'block') {
+                    initPuaTest();
+                }
+            } catch (e) {
+                console.error("Checklist Load Failed:", e);
+                // 失敗提示 (Gray style)
+                if(titleEl) {
+                    titleEl.innerHTML = `環境 PUA 毒性檢測 <span class="text-[10px] text-gray-400 bg-gray-50 px-2 py-0.5 rounded-full border border-gray-100 ml-2 font-normal align-middle">離線版</span>`;
+                }
+                
+                // 載入備用題庫
+                onlinePuaChecklist = [
+                    { text: "你不順服就是不蒙福", weight: 3 },
+                    { text: "這是在訓練你的信心", weight: 2 },
+                    { text: "不可觸摸受膏者", weight: 3 },
+                    { text: "這是魔鬼的攻擊", weight: 1 },
+                    { text: "要有國度觀", weight: 2 },
+                    { text: "這是在破碎老我", weight: 2 },
+                    { text: "你要把最好的獻上", weight: 3 }
+                ];
+            }
         }
 
         function initData() {
