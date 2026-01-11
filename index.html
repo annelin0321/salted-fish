@@ -307,8 +307,8 @@
                             <ellipse class="halo" cx="100" cy="50" rx="60" ry="10" fill="none" stroke="#D4B483" stroke-width="6" />
                             <path d="M100 80 C 150 80, 180 110, 180 130 C 180 150, 150 170, 100 170 C 50 170, 20 150, 20 130 C 20 110, 50 80, 100 80 Z" fill="#7CA1B3" />
                             <path d="M180 130 L 200 110 L 200 150 Z" fill="#7CA1B3" />
-                            <ellipse cx="60" cy="135" rx="10" ry="6" fill="#FFAB91" opacity="0.7" />
-                            <ellipse cx="140" cy="135" rx="10" ry="6" fill="#FFAB91" opacity="0.7" />
+                            <ellipse cx="60" cy="135" rx="10" ry="6" fill='%23FFAB91' opacity='0.7' />
+                            <ellipse cx="140" cy="135" rx="10" ry="6" fill='%23FFAB91' opacity='0.7' />
                             <g class="eye">
                                 <line x1="75" y1="112" x2="75" y2="128" stroke="white" stroke-width="3" stroke-linecap="round"/><line x1="69" y1="118" x2="81" y2="118" stroke="white" stroke-width="3" stroke-linecap="round"/>
                                 <line x1="125" y1="112" x2="125" y2="128" stroke="white" stroke-width="3" stroke-linecap="round"/><line x1="119" y1="118" x2="131" y2="118" stroke="white" stroke-width="3" stroke-linecap="round"/>
@@ -1118,13 +1118,14 @@
         // 新增：載入 PUA 金句典 JSON (直接連線版)
         async function loadPuaDictionary() {
             const container = document.getElementById('pua-tag-container');
+            const titleEl = document.querySelector('#pua h2'); // Target the H2
             const url = 'https://raw.githubusercontent.com/annelin0321/witty-bible-data/main/PUA_Dictionary.json';
             
             try {
                 const response = await fetch(`${url}?t=${new Date().getTime()}`);
                 if (!response.ok) throw new Error(`HTTP ${response.status}`);
                 const text = await response.text();
-                let data = JSON.parse(text); // 嘗試解析
+                let data = JSON.parse(text); 
                 if (!Array.isArray(data)) throw new Error("Format Err: Not Array");
 
                 puaData = data.map(item => ({
@@ -1136,23 +1137,28 @@
                 
                 console.log("PUA Dictionary Loaded:", puaData.length);
                 renderPuaTags();
-                // 成功提示
-                showToast(`✅ 聰明鹹魚資料庫連線成功 (${puaData.length}句)`);
                 
-                // 清除可能存在的舊錯誤訊息
+                // Update Title UI - Success (Gray, Small)
+                if (titleEl) {
+                    titleEl.innerHTML = `聰明鹹魚 <span class="text-[10px] text-gray-400 bg-gray-50 px-2 py-0.5 rounded-full border border-gray-100 ml-2 font-normal align-middle">線上版</span>`;
+                }
+                
+                // Remove error msg if any
                 if(container && container.previousElementSibling && container.previousElementSibling.className.includes('text-red-400')) {
                     container.previousElementSibling.remove();
                 }
 
             } catch (e) {
                 console.warn("PUA Load Failed (Using Offline Backup):", e);
+                
+                // Update Title UI - Fail (Gray, Small)
+                if (titleEl) {
+                    titleEl.innerHTML = `聰明鹹魚 <span class="text-[10px] text-gray-400 bg-gray-50 px-2 py-0.5 rounded-full border border-gray-100 ml-2 font-normal align-middle">離線版</span>`;
+                }
+
                 if(container) {
-                    // 避免重複添加錯誤訊息
                     if (!container.parentNode.querySelector('.offline-warning')) {
-                        const statusDiv = document.createElement('div');
-                        statusDiv.className = "offline-warning text-[10px] text-gray-400 text-center mb-2 italic";
-                        statusDiv.innerHTML = `⚠️ 使用離線資料庫 (${e.message})`;
-                        container.parentNode.insertBefore(statusDiv, container);
+                       // Suppress extra warning for minimal UI as requested
                     }
                 }
                 
@@ -1190,12 +1196,10 @@
                 }));
                 
                 console.log("PUA Checklist Loaded:", onlinePuaChecklist.length);
-                // 成功提示
-                showToast(`✅ 病毒快篩資料庫連線成功 (${onlinePuaChecklist.length}題)`);
                 
-                // 更新 UI 標題顯示狀態
+                // 更新 UI 標題顯示狀態 (Gray style for consistency)
                 if(titleEl) {
-                    titleEl.innerHTML = `環境 PUA 毒性檢測 <span class="text-[10px] text-green-600 bg-green-50 px-2 py-0.5 rounded-full border border-green-200 ml-2">線上版</span>`;
+                    titleEl.innerHTML = `環境 PUA 毒性檢測 <span class="text-[10px] text-gray-400 bg-gray-50 px-2 py-0.5 rounded-full border border-gray-100 ml-2 font-normal align-middle">線上版</span>`;
                 }
 
                 const area = document.getElementById('pua-test-area');
@@ -1204,9 +1208,9 @@
                 }
             } catch (e) {
                 console.error("Checklist Load Failed:", e);
-                // 失敗提示
+                // 失敗提示 (Gray style)
                 if(titleEl) {
-                    titleEl.innerHTML = `環境 PUA 毒性檢測 <span class="text-[10px] text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full border border-gray-200 ml-2">離線版</span>`;
+                    titleEl.innerHTML = `環境 PUA 毒性檢測 <span class="text-[10px] text-gray-400 bg-gray-50 px-2 py-0.5 rounded-full border border-gray-100 ml-2 font-normal align-middle">離線版</span>`;
                 }
                 
                 // 載入備用題庫
