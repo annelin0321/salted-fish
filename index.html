@@ -1577,10 +1577,33 @@
             const title = document.getElementById('bible-title');
             const tag = document.getElementById('bible-book-tag');
             const copyBtn = document.getElementById('copy-btn');
+            
+            // UI Reset
             content.innerHTML = '<div class="h-full flex flex-col items-center justify-center gap-4"><span class="loader"></span><span class="text-xs text-[#94908A] tracking-widest animate-pulse font-serif">讀取中...</span></div>';
             title.innerText = "讀取中...";
             copyBtn.classList.add('hidden');
             selectedVerses.clear();
+
+            // 防呆：檢查 item.bookCode 是否存在
+            if (!item.bookCode) {
+                renderDemoScripture(item.text, "資料格式過期", "請嘗試重新整理頁面以修復讀經計畫");
+                // 嘗試在背景觸發修復
+                setTimeout(() => {
+                    const saved = localStorage.getItem('biblePlan_2026');
+                    if(saved) {
+                        try {
+                            const plan = JSON.parse(saved);
+                            if(plan && plan.length > 0 && !plan[0].details[0].bookCode) {
+                                // 確實壞了，強制重置
+                                localStorage.removeItem('biblePlan_2026');
+                                location.reload();
+                            }
+                        } catch(e) {}
+                    }
+                }, 2000);
+                return;
+            }
+
             let startChap = item.chapter;
             let endChap = item.chapter;
             const parts = item.text.split(' '); 
@@ -1590,24 +1613,40 @@
                     endChap = parseInt(range.split('-')[1]);
                 }
             }
+
             let allVerses = [];
             try {
                 const promises = [];
                 for (let c = startChap; c <= endChap; c++) {
-                    promises.push(fetch(`https://bolls.life/get-text/CUNP/${item.bookCode}/${c}/`).then(r => r.json()));
+                    promises.push(
+                        fetch(`https://bolls.life/get-text/CUNP/${item.bookCode}/${c}/`)
+                        .then(r => {
+                            if (!r.ok) throw new Error(`HTTP ${r.status}`);
+                            return r.json();
+                        })
+                    );
                 }
+                
                 const results = await Promise.all(promises);
                 results.forEach((chapVerses, idx) => {
                     const currentChap = startChap + idx;
-                    chapVerses.forEach(v => {
-                        v.chapter = currentChap;
-                        v.text = stripHtml(v.text);
-                    });
-                    allVerses = allVerses.concat(chapVerses);
+                    if(Array.isArray(chapVerses)) {
+                        chapVerses.forEach(v => {
+                            v.chapter = currentChap;
+                            v.text = stripHtml(v.text);
+                        });
+                        allVerses = allVerses.concat(chapVerses);
+                    }
                 });
+
+                if (allVerses.length === 0) throw new Error("No Content");
                 renderScriptureBolls(allVerses, item.text);
+
             } catch (err) {
-                renderDemoScripture(item.text, "讀取失敗", "無法取得經文內容");
+                console.error("Bible Fetch Error:", err);
+                renderDemoScripture(item.text, "讀取失敗", "無法取得經文內容，請檢查網路", 
+                    `<button onclick="fetchBible({text:'${item.text}', bookCode:'${item.bookCode}', chapter:${item.chapter}})" class="mt-4 px-4 py-2 bg-[#F2EBE5] text-[#A68C76] rounded-full text-xs font-bold hover:bg-[#E0D8D0]">重試</button>`
+                );
             }
         }
 
@@ -1937,166 +1976,48 @@
             } catch (e) {}
         }
 
-        async function loadFlipQuotes() { const d=await fetchAndParseCSV('1402400724'); if(d){ let idx={c:d.headers.findIndex(h=>h.includes('content'))||0,s:d.headers.findIndex(h=>h.includes('source'))||1,cm:d.headers.findIndex(h=>h.includes('comment'))||2}; onlineFlipQuotes=[]; d.rows.forEach(l=>{const c=d.parser(l);if(c[idx.c])onlineFlipQuotes.push({text:c[idx.c],source:c[idx.s]||"",comment:c[idx.cm]||""})}); } }
-        
-        // 修改：游刃有魚 - 載入 Social Defense JSON
-        async function loadShieldData() {
-            const titleEl = document.querySelector('#shield h2');
-            const container = document.getElementById('shield-tag-container');
-            const url = 'https://raw.githubusercontent.com/annelin0321/witty-bible-data/main/social_defense.json';
-            
-            try {
-                const response = await fetch(`${url}?t=${new Date().getTime()}`);
-                if (!response.ok) throw new Error(`HTTP ${response.status}`);
-                
-                const data = await response.json();
-                if (!Array.isArray(data)) throw new Error("Format Err");
-                
-                onlineShieldData = data.map(item => ({
-                    label: item.label || item.question || item.tag || "未命名情境",
-                    options: Array.isArray(item.options) ? item.options : 
-                             (item.answers ? item.answers : 
-                             (item.replies ? item.replies : ["(無回應)"]))
-                }));
-
-                console.log("Shield Data Loaded:", onlineShieldData.length);
-                renderShieldTags();
-
-                if (titleEl) {
-                     titleEl.innerHTML = `游刃有魚 <span class="text-[10px] text-gray-400 bg-gray-50 px-2 py-0.5 rounded-full border border-gray-100 ml-2 font-normal align-middle">線上版</span>`;
-                }
-                
-            } catch (e) {
-                console.warn("Shield Data Load Failed:", e);
-                if (titleEl) {
-                     titleEl.innerHTML = `游刃有魚 <span class="text-[10px] text-gray-400 bg-gray-50 px-2 py-0.5 rounded-full border border-gray-100 ml-2 font-normal align-middle">離線版</span>`;
-                }
-                
-                // Fallback using existing 'shields' object defined in global scope
-                // Map 'shields' object to array format expected by renderShieldTags
-                onlineShieldData = Object.keys(shields).map(k => ({
-                    label: k==='marriage'?'什麼時候結婚?':k==='salary'?'薪水多少?':'沒來服事?', 
-                    options: shields[k]
-                }));
-                renderShieldTags();
-            }
-        }
-        
-        // 新增：載入 PUA 金句典 JSON (直接連線版)
-        async function loadPuaDictionary() {
-            const container = document.getElementById('pua-tag-container');
-            const titleEl = document.querySelector('#pua h2'); // Target the H2
-            const url = 'https://raw.githubusercontent.com/annelin0321/witty-bible-data/main/PUA_Dictionary.json';
-            
-            try {
-                const response = await fetch(`${url}?t=${new Date().getTime()}`);
-                if (!response.ok) throw new Error(`HTTP ${response.status}`);
-                const text = await response.text();
-                let data = JSON.parse(text); 
-                if (!Array.isArray(data)) throw new Error("Format Err: Not Array");
-
-                puaData = data.map(item => ({
-                    sentence: item.quote,
-                    trans: item.translation,
-                    defenses: Array.isArray(item.defenses) ? item.defenses : (item.defenses ? [item.defenses] : ["(保持微笑)"]),
-                    level: "⭐".repeat(item.level || 1)
-                }));
-                
-                console.log("PUA Dictionary Loaded:", puaData.length);
-                renderPuaTags();
-                
-                // Update Title UI - Success (Gray, Small)
-                if (titleEl) {
-                    titleEl.innerHTML = `聰明鹹魚 <span class="text-[10px] text-gray-400 bg-gray-50 px-2 py-0.5 rounded-full border border-gray-100 ml-2 font-normal align-middle">線上版</span>`;
-                }
-                
-                // Remove error msg if any
-                if(container && container.previousElementSibling && container.previousElementSibling.className.includes('text-red-400')) {
-                    container.previousElementSibling.remove();
-                }
-
-            } catch (e) {
-                console.warn("PUA Load Failed (Using Offline Backup):", e);
-                
-                // Update Title UI - Fail (Gray, Small)
-                if (titleEl) {
-                    titleEl.innerHTML = `聰明鹹魚 <span class="text-[10px] text-gray-400 bg-gray-50 px-2 py-0.5 rounded-full border border-gray-100 ml-2 font-normal align-middle">離線版</span>`;
-                }
-
-                if(container) {
-                    if (!container.parentNode.querySelector('.offline-warning')) {
-                       // Suppress extra warning for minimal UI as requested
-                    }
-                }
-                
-                puaData = [
-                    { sentence: "你不順服就是不蒙福", trans: "聽我的話，不然你會倒楣 (恐懼操弄)", defenses: ["福氣是神給的，不是人給的。", "我在順服神，這比較重要。", "蒙福的前提是真理，不是盲從。"], level: "⭐⭐⭐" },
-                    { sentence: "這是在訓練你的信心", trans: "這是不合理的苦差事，但我不想承認", defenses: ["信心是在安息中建立的，不是過勞中。", "神比較想訓練我的界線。", "我的信心已經夠大了，現在需要的是休息。"], level: "⭐⭐" },
-                    { sentence: "不可觸摸受膏者", trans: "我是特權階級，你不能質疑我", defenses: ["真理越辯越明。", "我們都是君尊的祭司，地位平等。", "連保羅都接受檢驗，何況是你？"], level: "⭐⭐⭐⭐⭐" },
-                    { sentence: "要為主擺上", trans: "請免費加班", defenses: ["我的身體也是神的殿，需要保養。", "擺上不是被榨乾。", "神喜悅甘心樂意，不是勉強。"], level: "⭐⭐⭐" },
-                    { sentence: "離開這間教會就沒遮蓋了", trans: "我在恐嚇你不敢離開", defenses: ["耶和華是我的遮蓋。", "教會是家，不是監獄。", "神的同在不被建築物限制。"], level: "⭐⭐⭐⭐" },
-                    { sentence: "這是魔鬼的攻擊", trans: "我不接受任何負面回饋", defenses: ["有時候不是魔鬼，只是常識。", "我們需要面對現實，解決問題。", "魔鬼沒那麼閒，這可能是管理問題。"], level: "⭐⭐" },
-                    { sentence: "要有國度觀", trans: "把資源都給我用", defenses: ["我的國度觀包含公義與合理。", "神也看重個人的需要。", "國度是由一個個健康的個體組成的。"], level: "⭐⭐" },
-                    { sentence: "你的感動不準，要聽我的", trans: "我想要控制你的決定", defenses: ["聖靈也會親自對我說話。", "我們一起禱告查驗，不是單方面聽令。", "我有責任為自己的人生負責。"], level: "⭐⭐⭐⭐" },
-                    { sentence: "這是在破碎你的老我", trans: "我要摧毀你的自尊，讓你變聽話", defenses: ["神破碎是為了重建，不是為了羞辱。", "健康的自我價值是神所賜的。", "這種破碎法只會產生傷口，不會產生生命。"], level: "⭐⭐⭐" },
-                    { sentence: "不要問為什麼，做就對了", trans: "我懶得解釋，或者禁不起推敲", defenses: ["神是講理的神，信仰需要理性。", "明白意義才能全心投入。", "盲從不是聖經教導的順服。"], level: "⭐⭐⭐" }
-                ];
-                renderPuaTags();
-            }
-        }
-
-        // 修改：載入 PUA 快篩 JSON (直接連線版)
-        async function loadPuaChecklist() {
-            const url = 'https://raw.githubusercontent.com/annelin0321/witty-bible-data/main/PUA_Checklist.json';
-            const titleEl = document.querySelector('#pua-test-area span'); // 取得標題元素
-            
-            try {
-                const response = await fetch(`${url}?t=${new Date().getTime()}`);
-                if (!response.ok) throw new Error(`HTTP ${response.status}`);
-                const text = await response.text();
-                let data = JSON.parse(text);
-                if (!Array.isArray(data)) throw new Error("Format Err");
-
-                onlinePuaChecklist = data.map(item => ({
-                    text: item.question,
-                    weight: item.weight || 1
-                }));
-                
-                console.log("PUA Checklist Loaded:", onlinePuaChecklist.length);
-                
-                // 更新 UI 標題顯示狀態 (Gray style for consistency)
-                if(titleEl) {
-                    titleEl.innerHTML = `環境 PUA 毒性檢測 <span class="text-[10px] text-gray-400 bg-gray-50 px-2 py-0.5 rounded-full border border-gray-100 ml-2 font-normal align-middle">線上版</span>`;
-                }
-
-                const area = document.getElementById('pua-test-area');
-                if(area && area.style.display === 'block') {
-                    initPuaTest();
-                }
-            } catch (e) {
-                console.error("Checklist Load Failed:", e);
-                // 失敗提示 (Gray style)
-                if(titleEl) {
-                    titleEl.innerHTML = `環境 PUA 毒性檢測 <span class="text-[10px] text-gray-400 bg-gray-50 px-2 py-0.5 rounded-full border border-gray-100 ml-2 font-normal align-middle">離線版</span>`;
-                }
-                
-                // 載入備用題庫
-                onlinePuaChecklist = [
-                    { text: "你不順服就是不蒙福", weight: 3 },
-                    { text: "這是在訓練你的信心", weight: 2 },
-                    { text: "不可觸摸受膏者", weight: 3 },
-                    { text: "這是魔鬼的攻擊", weight: 1 },
-                    { text: "要有國度觀", weight: 2 },
-                    { text: "這是在破碎老我", weight: 2 },
-                    { text: "你要把最好的獻上", weight: 3 }
-                ];
-            }
-        }
-
         function initData() {
-            const savedBible = localStorage.getItem('biblePlan_2026');
-            if (savedBible) biblePlan = JSON.parse(savedBible);
-            else { biblePlan = generateBiblePlan(); saveToStorage('biblePlan_2026', JSON.stringify(biblePlan)); }
+            const DB_KEY = 'biblePlan_2026';
+            const savedBible = localStorage.getItem(DB_KEY);
+            let needRegen = !savedBible;
+            
+            // Check for bookCode validity (fix for the user issue)
+            if (!needRegen) {
+                try {
+                    const plan = JSON.parse(savedBible);
+                    // Check first day's first reading item. If it has reading but no bookCode, regen.
+                    if (plan && plan.length > 0) {
+                        const firstDay = plan[0];
+                        const firstDetail = firstDay.details && firstDay.details.find(d => !d.isNote);
+                        if (firstDetail && !firstDetail.bookCode) {
+                            needRegen = true;
+                        }
+                    }
+                } catch(e) {
+                    needRegen = true;
+                }
+            }
+
+            if (needRegen) {
+                biblePlan = generateBiblePlan(); 
+                
+                // Preserve completed status if possible
+                if (savedBible) {
+                    try {
+                        const oldPlan = JSON.parse(savedBible);
+                        if (oldPlan.length === biblePlan.length) {
+                             oldPlan.forEach((d, i) => {
+                                 if (d.completed) biblePlan[i].completed = true;
+                             });
+                        }
+                    } catch(e) {}
+                }
+                
+                saveToStorage(DB_KEY, JSON.stringify(biblePlan));
+            } else {
+                biblePlan = JSON.parse(savedBible);
+            }
+
             try { savingsPlan = JSON.parse(localStorage.getItem('savingsPlan')||JSON.stringify(new Array(366).fill(false))); } catch(e){}
             try { wishlist = JSON.parse(localStorage.getItem('wishlist')||'[]'); } catch(e){}
             try { futureLetters = JSON.parse(localStorage.getItem('futureLetters')||'[]'); } catch(e){}
